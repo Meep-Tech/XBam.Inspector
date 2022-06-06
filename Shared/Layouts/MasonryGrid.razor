@@ -1,0 +1,8 @@
+﻿<div class="row masonry-grid" style="margin:0px" data-masonry=@("{\"percentPosition\": true }")>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+}

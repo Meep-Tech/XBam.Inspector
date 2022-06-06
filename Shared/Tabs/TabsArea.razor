@@ -1,0 +1,47 @@
+﻿@using Xbam.Inspector.Shared.Layouts
+<!-- Example:
+    <CascadingValue Value="this">
+        <div style="width:100%;background-color:gray;">
+            <div class="btn-toolbar" role="toolbar">
+              @foreach (TabPannel tabPage in Pages) {
+                <button 
+                    type="button"
+                    class="btn @GetButtonClass(tabPage)"
+                    @onclick=@(() => ActivatePage(tabPage))>
+                    @tabPage.Title
+                </button>
+              }
+            </div>
+        </div>
+        @ChildContent
+    </CascadingValue>
+-->
+
+@code {
+    List<TabPannel> _pages = new();
+
+    public IReadOnlyList<TabPannel> Pages => _pages;
+
+    [Parameter] 
+    public RenderFragment ChildContent { get; set; }
+
+    public TabPannel ActivePage { get; private set; }
+
+    public void AddPage(TabPannel tabPage) {
+        _pages.Add(tabPage);
+        if (_pages.Count == 1) {
+            ActivePage = tabPage;
+        }
+        StateHasChanged();
+    }
+    
+    protected void ActivatePage(TabPannel page) {
+        ActivePage = page;
+    }
+
+    protected string GetButtonClass(TabPannel page) {
+        return page == ActivePage 
+            ? "btn-primary" 
+            : "btn-secondary";
+    }
+}

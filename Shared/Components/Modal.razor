@@ -1,0 +1,32 @@
+﻿<div class="modal fade @(IsEnabled ? "show" : "")" tabindex="-1" role="dialog" @onclick=@(() => Close()) @onclick:stopPropagation="true" @onclick:preventDefault="true">
+  <div class="modal-dialog" style="max-width:650px" role="document" @onclick:preventDefault="true" @onclick:stopPropagation="true">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">@Title</h5>
+        <button type="button" class="close" @onclick=@(() => Close()) aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        @ChildContent
+      </div>
+    </div>
+  </div>
+</div>
+<div
+    class="modal-backdrop fade show"
+    style=@(IsEnabled ? "" : "display:none;")/>
+
+@code {
+    [Parameter]
+    public string Title { get; init; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; init; }
+
+    [Parameter]
+    public bool IsEnabled { get; set; }
+
+    [Parameter]
+    public Action Close { get; set; }
+}

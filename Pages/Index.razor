@@ -1,0 +1,18 @@
+﻿@page "/"
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Layouts
+@using Xbam.Inspector.Shared.Tabs
+
+<InspectorTabsArea>
+	<InspectorTypeFamilyTabPannel Title="Tab 2"/>
+	<TabPannel Title="Tab 1">
+		<h1>Welcome!</h1>
+		<p>Open a new tab to start inspecting!</p>
+	</TabPannel>
+</InspectorTabsArea>
+
+@code{
+	public static Dictionary<string, TabData> TabState {
+		get;
+	} = new();
+}

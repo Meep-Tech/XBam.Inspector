@@ -1,0 +1,26 @@
+﻿@using Xbam.Inspector.Shared.Tabs
+@if (IsTheActivePage) {
+    @ChildContent
+}
+
+@code {
+    [CascadingParameter] 
+    public TabsArea Parent { get; private set; }
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    public bool IsTheActivePage
+        => Parent.ActivePage == this;
+
+    [Parameter]
+    public string Title { get; set; }
+
+    protected override void OnInitialized() {
+        if (Parent == null) {
+            throw new ArgumentNullException(nameof(Parent), "InspectorTypeFamilyTabPannel must exist within a InspectorTypeFamilyTabsArea");
+        }
+        Parent.AddPage(this);
+        base.OnInitialized();
+    }
+}

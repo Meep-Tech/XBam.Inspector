@@ -1,0 +1,125 @@
+﻿@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components
+@using Meep.Tech.Data.Utility;
+
+<Modal 
+    Title="Add Inspector Tab" 
+    IsEnabled=@IsEnabled 
+    Close=@Close>
+    <div style="display:flex;flex-direction:row;">
+        <input 
+            type="text" 
+            id="search" 
+            class="form-control" 
+            @oninput=@((ChangeEventArgs e) => _onSearchCriteriaChanged(e.Value?.ToString() ?? ""))
+            disabled=@_allSearchEnabled />
+        <select 
+            style="width:auto;" 
+            class="form-select" 
+            @onchange=@((ChangeEventArgs e) => {
+                _selectedTabType = TabData.Type.Get(e.Value.ToString());
+                // changes and don't update the text
+                _onSearchCriteriaChanged(null);
+            })>
+            @foreach(TabData.Type type in _tabTypes) {
+                <option 
+                    value=@type.ExternalId.ToString()>
+                    @type.ExternalId.ToString()
+                </option>
+            }
+        </select>
+        <button 
+            class="btn"
+            style="color:white;background-color:@(_namespaceSearchEnabled ? "green" : "grey");"
+            @onclick=@(() => {
+                _namespaceSearchEnabled = !_namespaceSearchEnabled;
+                // don't update the text
+                _onSearchCriteriaChanged(null);
+            })
+            title="Include Item Namespaces In Search"
+            disabled=@_allSearchEnabled
+            >&NS</button>
+        <button 
+            class="btn"
+            style="color:white;background-color:@(_allSearchEnabled ? "green" : "grey");"
+            @onclick=@(() => {
+                _allSearchEnabled = !_allSearchEnabled;
+                // don't update the text
+                _onSearchCriteriaChanged(null);
+            })
+            title="Show All Items"
+            >All</button>
+    </div>
+    <div style="max-height:800px;overflow:scroll">
+        @if(_resultsLoaded) {
+            <ul class="list-group">
+                @foreach(var tabTypeOption in _tabTypeSearchResults) {
+                    <li class="list-group-item" style=@(tabTypeOption.IsAbstract ? "font-style: italic;" : "")>
+                        <span style="color:grey">
+                            @tabTypeOption.Prefix
+                        </span>
+                        <span style="color:black">
+                            @tabTypeOption.LongNamePrefixWithoutShortNamePrefix
+                        </span>
+                        <span style="color:black;font-weight:bold">
+                            @tabTypeOption.ShortNamePrefix
+                        </span>
+                        <span style="color:blue;font-weight:bold">
+                            @tabTypeOption.ShortName
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+    </div>
+</Modal>
+
+@code {
+    int _tabTypeOptionIndex = 0;
+    bool _resultsLoaded, _allSearchEnabled, _resultsAreLoading, _namespaceSearchEnabled;
+    string _searchTerm = "";
+    TabData.Type _selectedTabType;
+    IEnumerable<TabData.Type> _tabTypes;
+    IEnumerable<TabTypeData> _tabTypeSearchResults;
+
+    [Parameter]
+    public bool IsEnabled { get; set; }
+
+    [Parameter]
+    public Action Close { get; set; }
+
+    protected override void OnInitialized() {
+        _tabTypes = TabData.Type.All.OrderBy(t => t.ExternalId.ToString());
+        _selectedTabType = _tabTypes.First();
+        _tabTypeSearchResults = Enumerable.Empty<TabTypeData>();
+        base.OnInitialized();
+    }
+
+    /// <summary>
+    /// Passing in null does not update the search text. passing in empty does
+    /// </summary>
+    async void _onSearchCriteriaChanged(string newText) {
+        _searchTerm = newText ?? _searchTerm;
+        _resultsLoaded = false;
+        StateHasChanged();
+        if (!_allSearchEnabled && string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            _resultsAreLoading = false;
+            return;
+        }
+        else {
+            _resultsAreLoading = true;
+            StateHasChanged();
+
+            _tabTypeSearchResults 
+                = _selectedTabType.GetTabItemTypes(
+                    _allSearchEnabled ? null : _searchTerm,
+                    _namespaceSearchEnabled
+                );
+
+            _resultsAreLoading = false;
+            _resultsLoaded = true;
+            StateHasChanged();
+        }
+    }
+}

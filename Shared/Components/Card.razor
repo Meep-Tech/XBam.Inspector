@@ -1,0 +1,90 @@
+﻿@using Meep.Tech.Collections.Generic
+@using Xbam.Inspector.Data
+
+<div class="card-container @(!IsExpanded ? "closed" : "")">
+    <div 
+        class="card @(!IsExpanded ? "closed" : "")" 
+        style="background-color: @(_currentMainColor);">
+        <nav 
+            class="navbar navbar-expand-lg navbar-dark justify-content-between" 
+            style="min-width:300px;height:35px;background-color:@(_currentMainColor);">
+            <span class="navbar-brand mb-0 h1" style="margin-left:10px">@Title</span>
+            <button
+                title="Toggle Expanded"
+                @onclick=@(() => _toggleExpanded())
+                style="background-color:@(_currentMainColor);color:white;width:30px;height:30px;">
+                @_expandToggleSymbol</button>
+        </nav>
+        @if(IsExpanded) {
+            <div
+                class="card-content" 
+                style="color:white;min-width:300px;min-height:200px;background-color:#222222;padding:5px">
+                @ChildContent
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    CardData _state;
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent {
+        get;
+        set; 
+    }
+
+    [Parameter, EditorRequired]
+    public string Title {
+        get;
+        set; 
+    }
+
+    [Parameter, EditorRequired]
+    public string ItemId {
+        get;
+        set;
+    }
+
+    [Parameter, EditorRequired]
+    public string TabId {
+        get;
+        set;
+    }
+
+    [Parameter, EditorRequired]
+    public CardData.Type CardType {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public bool IsExpanded {
+        get => _passedInForceExpand 
+            ?? _state.IsExpanded;
+        init {
+            _passedInForceExpand = value;
+        }
+    } bool? _passedInForceExpand;
+
+    string _expandToggleSymbol
+        => IsExpanded 
+            ? "-"
+            : "+";
+
+    string _currentMainColor
+        => IsExpanded ? CardType.ExpandedColor : CardType.CollapsedColor;
+
+    protected override void OnInitialized() {
+        _state = Pages.Index
+            .TabState.TryToGet(TabId, new())
+            .ItemsState.TryToGet(ItemId, new())
+            .CardsState.TryToGet(Title, new() {IsExpanded = _passedInForceExpand ?? true});
+    }
+
+    void _toggleExpanded(bool? @override = null){
+        _state.IsExpanded = (@override ?? !IsExpanded);
+        _passedInForceExpand = null;
+        StateHasChanged();
+    }
+}
