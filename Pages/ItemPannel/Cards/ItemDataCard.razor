@@ -1,5 +1,6 @@
 ﻿@using Meep.Tech.Collections.Generic
-@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components
+@inherits Card
 
 <div class="card-container @(!IsExpanded ? "closed" : "")">
     <div 
@@ -26,48 +27,25 @@
 </div>
 
 @code {
-    protected CardData State
-        = new();
-
-    [Parameter]
-    public RenderFragment ChildContent {
-        get;
-        set; 
-    }
 
     [Parameter, EditorRequired]
-    public string Title {
-        get;
-        set; 
-    }
-
-    [Parameter, EditorRequired]
-    public CardData.Type CardType {
+    public string ItemId {
         get;
         set;
     }
 
-    [Parameter]
-    public bool IsExpanded {
-        get => DomProvidedIsExpandedValue 
-            ?? State.IsExpanded;
-        init {
-            DomProvidedIsExpandedValue = value;
-        }
-    } protected bool? DomProvidedIsExpandedValue;
+    [Parameter, EditorRequired]
+    public string TabId {
+        get;
+        set;
+    }
 
-    protected string ExpandToggleSymbol
-        => IsExpanded 
-            ? "-"
-            : "+";
+    protected override void OnInitialized() {
+        State = Pages.Index
+            .TabState[TabId]
+            .ItemsState.TryToGet(ItemId, new())
+            .CardsState.TryToGet(Title, new() {IsExpanded = DomProvidedIsExpandedValue ?? true});
 
-    protected string CurrentMainColor
-        => IsExpanded ? CardType.ExpandedColor : CardType.CollapsedColor;
-
-    protected void ToggleExpanded(bool? @override = null){
-        State.IsExpanded = (@override ?? !IsExpanded);
-
-        DomProvidedIsExpandedValue = null;
-        StateHasChanged();
+        base.OnInitialized();
     }
 }

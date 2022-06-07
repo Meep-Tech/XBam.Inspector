@@ -1,4 +1,5 @@
 ﻿@using Xbam.Inspector.Data
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs.Pannels
 @using Xbam.Inspector.Shared.Components.Tabs
 @inherits TabsArea
 
@@ -10,7 +11,7 @@
                 type="button"
                 class="btn @GetButtonClass(tabPage)"
                 @onclick=@(() => ActivatePage(tabPage))
-                style="border: 3px solid @((tabPage as InspectorTypeFamilyTabPannel)?.Type.TabHilightColor ?? "black");margin-top:1px;margin-left:2px;border-right:0px;border-bottom:0px;">
+                style="border: 3px solid @((tabPage as InspectorTypeFamilyPannel)?.Type.TabHilightColor ?? "black");margin-top:1px;margin-left:2px;border-right:0px;border-bottom:0px;">
                 @tabPage.Title
             </button>
           }
@@ -19,7 +20,7 @@
     <div style="height:100%">
         @ChildContent
         @foreach(InspectorTabData tabData in Xbam.Inspector.Pages.Index.TabState.Values) {
-            <InspectorTypeFamilyTabPannel
+            <InspectorTypeFamilyPannel
                 @ref=_addPannel
                 Title=@tabData.Tab.Name 
                 Key=@tabData.Tab.Key
@@ -30,16 +31,11 @@
 </CascadingValue>
 
 @code {
-    public InspectorTypeFamilyTabPannel _addPannel { 
+    // TODO: unneeded remove these:
+    InspectorTypeFamilyPannel _addPannel { 
         set => _inspectorPannels[value.Type + value.Key] = value;
-    }
-
-    readonly Dictionary<string, InspectorTypeFamilyTabPannel> _inspectorPannels
+    } readonly Dictionary<string, InspectorTypeFamilyPannel> _inspectorPannels
         = new();
-
-    protected override void OnInitialized() {
-        base.OnInitialized();
-    }
 
     public void AddInspectorTab(InspectorTabData tabData) {
         Xbam.Inspector.Pages.Index._addTabToState(tabData);

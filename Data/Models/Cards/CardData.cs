@@ -2,6 +2,10 @@
 
 namespace Xbam.Inspector.Data {
     public partial class CardData {
+        public string Key {
+            get;
+            init;
+        }
 
         public bool IsExpanded { get; internal set; }
 

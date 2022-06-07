@@ -1,6 +1,7 @@
 ﻿@using Xbam.Inspector.Data
 @using Meep.Tech.Data.Utility
 @using Xbam.Inspector.Pages.InspectorIndex.Tabs
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs.Pannels
 @using Xbam.Inspector.Shared.Components
 @using Xbam.Inspector.Shared.Components.Tabs
 
@@ -138,7 +139,7 @@
         string tabId = type.ExternalId.ToString() + tab.Key;
         if (Xbam.Inspector.Pages.Index.TabState.ContainsKey(tabId)) {
             Xbam.Inspector.Pages.Index.InspectorTabs.ActivatePage(
-                Xbam.Inspector.Pages.Index.InspectorTabs.Pages.First(p => (p as InspectorTypeFamilyTabPannel)?.Id == tabId)
+                Xbam.Inspector.Pages.Index.InspectorTabs.Pages.First(p => (p as InspectorTypeFamilyPannel)?.Id == tabId)
             );
             Xbam.Inspector.Pages.Index.InspectorTabs._stateHasChanged();
             return;

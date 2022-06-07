@@ -1,0 +1,26 @@
+﻿@using Xbam.Inspector.Shared.Components.Tabs
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Data;
+@inherits TabPannel
+
+@if (IsTheActivePage) {
+    <h1>@Title</h1>
+    <ItemsTabsArea TabId=@Id/>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Key {
+        get;
+        init;
+    } = null!;
+
+    [Parameter, EditorRequired]
+    public InspectorTabData.Type Type {
+        get;
+        init;
+    }
+
+    public string Id 
+        => Type.ExternalId.ToString() + Key;
+}

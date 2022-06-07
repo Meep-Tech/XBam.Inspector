@@ -42,6 +42,10 @@ namespace Xbam.Inspector.Data {
             public IEnumerable<TabIndexData> GetTabItemTypes(string optionalSearchTerm = null, bool searchNamespace = false)
                 => _filterItemTypes(GetAllValidTabItems(), optionalSearchTerm?.ToLower(), searchNamespace);
 
+            public virtual ItemData LoadItemAndCards(string key) {
+
+            }
+
             protected virtual IEnumerable<TabIndexData> GetAllValidTabItems() => new TabIndexData[] {
                 ("Test.Type", "Testing.Prefix"),
                 ("Test.Type2", "Testing.Prefix"),

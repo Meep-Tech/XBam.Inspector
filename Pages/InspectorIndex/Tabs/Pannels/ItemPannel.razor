@@ -1,0 +1,50 @@
+﻿@using Meep.Tech.Collections.Generic
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Pages.ItemPannel.Cards
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Shared.Components.Tabs
+@inherits TabPannel
+
+@if (IsTheActivePage) {
+    <TabPannel Title=@Key>
+        <MasonryGrid>
+            @foreach(CardData cardData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState.TryToGet(Key)?.CardsState.Values) {
+                <ItemDataCard 
+                    CardType=cardData.CardType
+                    TabId=@TabId 
+                    ItemId=@Key 
+                    Title=@cardData.Key />
+            }
+        </MasonryGrid>
+    </TabPannel>
+}
+
+@code {
+    protected ItemData State;
+
+    [Parameter, EditorRequired]
+    public string TabId {
+        get;
+        set;
+    }
+
+    [Parameter, EditorRequired]
+    public InspectorTabData.Type TabType {
+        get;
+        set;
+    }
+
+    [Parameter, EditorRequired]
+    public string Key {
+        get;
+        set;
+    }
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+        if (!Pages.Index.TabState[TabId].ItemsState.TryGetValue(Key, out State)) {
+            State = Pages.Index.TabState[TabId].ItemsState[Key]
+                = TabType.LoadItemAndCards(Key);
+        }
+    }
+}

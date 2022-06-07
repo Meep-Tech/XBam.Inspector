@@ -59,8 +59,4 @@
 	  <ProjectReference Include="..\..\..\libraries\c-sharp\ECSBAMF\Meep.Tech.Data\Meep.Tech.Data.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="Pages\ItemPannel\Cards\" />
-	</ItemGroup>
-
 </Project>

@@ -1,4 +1,7 @@
-﻿@using Xbam.Inspector.Shared.Components.Tabs
+﻿@using Xbam.Inspector.Data
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs.Pannels
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Shared.Components.Tabs
 @inherits TabsArea
 @implements IHandleAfterRender
 
@@ -20,6 +23,9 @@
         </div>
         <div style="height:100%;color:white;">
             @ChildContent
+            @foreach(ItemData itemData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState.Values) {
+                <ItemPannel TabId=@TabId Key=@itemData.Key/>
+            }
         </div>
     </div>
 </CascadingValue>
