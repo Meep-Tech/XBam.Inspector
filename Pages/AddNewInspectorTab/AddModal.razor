@@ -1,8 +1,10 @@
 ﻿@using Xbam.Inspector.Data
+@using Meep.Tech.Data.Utility
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs
 @using Xbam.Inspector.Shared.Components
-@using Meep.Tech.Data.Utility;
+@using Xbam.Inspector.Shared.Components.Tabs
 
-<Modal 
+<Modal
     Title="Add Inspector Tab" 
     IsEnabled=@IsEnabled 
     Close=@Close>
@@ -17,11 +19,11 @@
             style="width:auto;" 
             class="form-select" 
             @onchange=@((ChangeEventArgs e) => {
-                _selectedTabType = TabData.Type.Get(e.Value.ToString());
+                _selectedTabType = InspectorTabData.Type.Get(e.Value.ToString());
                 // changes and don't update the text
                 _onSearchCriteriaChanged(null);
             })>
-            @foreach(TabData.Type type in _tabTypes) {
+            @foreach(InspectorTabData.Type type in _tabTypes) {
                 <option 
                     value=@type.ExternalId.ToString()>
                     @type.ExternalId.ToString()
@@ -37,7 +39,6 @@
                 _onSearchCriteriaChanged(null);
             })
             title="Include Item Namespaces In Search"
-            disabled=@_allSearchEnabled
             >&NS</button>
         <button 
             class="btn"
@@ -54,10 +55,20 @@
         @if(_resultsLoaded) {
             <ul class="list-group">
                 @foreach(var tabTypeOption in _tabTypeSearchResults) {
-                    <li class="list-group-item" style=@(tabTypeOption.IsAbstract ? "font-style: italic;" : "")>
-                        <span style="color:grey">
-                            @tabTypeOption.Prefix
-                        </span>
+                    <li 
+                        class="list-group-item"
+                        @onclick=@(() => _createOrOpenTab(tabTypeOption, _selectedTabType))
+                        style=@(
+                            (tabTypeOption.IsAbstract ? "font-style: italic;" : "")
+                            + (Pages.Index.TabState.ContainsKey(_selectedTabType.ExternalId.ToString() + tabTypeOption.Key)
+                                ? "background-color:#98FB98" 
+                                : "")
+                        )>
+                        @if (_namespaceSearchEnabled) {
+                            <span style="color:grey">
+                                @(tabTypeOption.Prefix + ".")
+                            </span>
+                        }
                         <span style="color:black">
                             @tabTypeOption.LongNamePrefixWithoutShortNamePrefix
                         </span>
@@ -78,27 +89,27 @@
     int _tabTypeOptionIndex = 0;
     bool _resultsLoaded, _allSearchEnabled, _resultsAreLoading, _namespaceSearchEnabled;
     string _searchTerm = "";
-    TabData.Type _selectedTabType;
-    IEnumerable<TabData.Type> _tabTypes;
-    IEnumerable<TabTypeData> _tabTypeSearchResults;
+    InspectorTabData.Type _selectedTabType;
+    IEnumerable<InspectorTabData.Type> _tabTypes;
+    IEnumerable<TabIndexData> _tabTypeSearchResults;
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public bool IsEnabled { get; set; }
 
-    [Parameter]
+    [Parameter, EditorRequired]
     public Action Close { get; set; }
 
     protected override void OnInitialized() {
-        _tabTypes = TabData.Type.All.OrderBy(t => t.ExternalId.ToString());
+        _tabTypes = InspectorTabData.Type.All.OrderBy(t => t.ExternalId.ToString());
         _selectedTabType = _tabTypes.First();
-        _tabTypeSearchResults = Enumerable.Empty<TabTypeData>();
+        _tabTypeSearchResults = Enumerable.Empty<TabIndexData>();
         base.OnInitialized();
     }
 
     /// <summary>
     /// Passing in null does not update the search text. passing in empty does
     /// </summary>
-    async void _onSearchCriteriaChanged(string newText) {
+    void _onSearchCriteriaChanged(string newText) {
         _searchTerm = newText ?? _searchTerm;
         _resultsLoaded = false;
         StateHasChanged();
@@ -121,5 +132,21 @@
             _resultsLoaded = true;
             StateHasChanged();
         }
+    }   
+
+    void _createOrOpenTab(TabIndexData tab, InspectorTabData.Type type) {
+        string tabId = type.ExternalId.ToString() + tab.Key;
+        if (Xbam.Inspector.Pages.Index.TabState.ContainsKey(tabId)) {
+            Xbam.Inspector.Pages.Index.InspectorTabs.ActivatePage(
+                Xbam.Inspector.Pages.Index.InspectorTabs.Pages.First(p => (p as InspectorTypeFamilyTabPannel)?.Id == tabId)
+            );
+            Xbam.Inspector.Pages.Index.InspectorTabs._stateHasChanged();
+            return;
+        }
+
+        Pages.Index.InspectorTabs.AddInspectorTab(new() {
+            Tab = tab,
+            TabType = type
+        });
     }
 }

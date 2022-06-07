@@ -1,4 +1,4 @@
-﻿@using Xbam.Inspector.Shared.Layouts
+﻿
 <!-- Example:
     <CascadingValue Value="this">
         <div style="width:100%;background-color:gray;">
@@ -27,20 +27,24 @@
 
     public TabPannel ActivePage { get; private set; }
 
-    public void AddPage(TabPannel tabPage) {
+    internal void _addInitialPannel(TabPannel tabPage) {
         _pages.Add(tabPage);
         if (_pages.Count == 1) {
             ActivePage = tabPage;
         }
         StateHasChanged();
     }
-    
-    protected void ActivatePage(TabPannel page) {
+
+    protected internal void ActivatePage(TabPannel page) {
         ActivePage = page;
     }
 
-    protected string GetButtonClass(TabPannel page) {
-        return page == ActivePage 
+    internal void _stateHasChanged() {
+        StateHasChanged();
+    }
+
+    protected virtual string GetButtonClass(object page) {
+        return (page as TabPannel) == ActivePage 
             ? "btn-primary" 
             : "btn-secondary";
     }

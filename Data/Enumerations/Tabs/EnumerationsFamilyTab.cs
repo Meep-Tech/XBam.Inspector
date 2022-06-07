@@ -1,8 +1,7 @@
 ﻿using Meep.Tech.Data;
-using Meep.Tech.Data.Reflection;
 
 namespace Xbam.Inspector.Data {
-    public partial class TabData {
+    public partial class InspectorTabData {
         public abstract partial class Type {
             public class EnumerationsFamilyTab : Type {
                 public static EnumerationsFamilyTab Id { get; }
@@ -10,9 +9,12 @@ namespace Xbam.Inspector.Data {
                 EnumerationsFamilyTab()
                     : base(nameof(EnumerationsFamilyTab)) { }
 
-                protected override IEnumerable<TabTypeData> GetAllValidTabItems()
+                public override string TabHilightColor
+                    => "LimeGreen";
+
+                protected override IEnumerable<TabIndexData> GetAllValidTabItems()
                     => Archetypes.DefaultUniverse.Enumerations.ByType.Keys
-                        .Select(t => new TabTypeData(t));
+                        .Select(t => new TabIndexData(t));
             }
         }
     }

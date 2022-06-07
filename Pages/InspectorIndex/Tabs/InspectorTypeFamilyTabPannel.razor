@@ -1,13 +1,14 @@
-﻿@using Xbam.Inspector.Shared.Layouts
+﻿@using Xbam.Inspector.Shared.Components.Tabs
 @using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Data;
 @inherits TabPannel
 
 @if (IsTheActivePage) {
     <h1>@Title</h1>
-    <ItemsTabsArea>
+    <ItemsTabsArea TabId=@Id>
         <TabPannel Title="TestTest">
             <MasonryGrid>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test" CardType=@Data.CardData.Type.ModelComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test" CardType=@Data.CardData.Type.ModelComponent>
                     <p>
                         This is text content for a card.
                         This is text content for a card.
@@ -27,43 +28,60 @@
                         This is text content for a card.
                     </p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test2" CardType=@Data.CardData.Type.ArchetypeComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test2" CardType=@Data.CardData.Type.ArchetypeComponent>
                     <p>This is text content for card 2</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test3" CardType=@Data.CardData.Type.ArchetypeComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test3" CardType=@Data.CardData.Type.ArchetypeComponent>
                     <p>This is text content for card 3</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test4" CardType=@Data.CardData.Type.ArchetypeComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test4" CardType=@Data.CardData.Type.ArchetypeComponent>
                     <p>This is text content for card 4</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test5" CardType=@Data.CardData.Type.XBamMetadata>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test5" CardType=@Data.CardData.Type.XBamMetadata>
                     <p>This is text content for card 5</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test6" CardType=@Data.CardData.Type.ArchetypeComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test6" CardType=@Data.CardData.Type.ArchetypeComponent>
                     <p>This is text content for card 6. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. </p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test7" CardType=@Data.CardData.Type.CSharpCode>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test7" CardType=@Data.CardData.Type.CSharpCode>
                     <p>This is text content for card 7</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test8" CardType=@Data.CardData.Type.XBamMetadata>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test8" CardType=@Data.CardData.Type.XBamMetadata>
                     <p>This is text content for a card</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test9" CardType=@Data.CardData.Type.ArchetypeComponent>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test9" CardType=@Data.CardData.Type.ArchetypeComponent>
                     <p>This is text content for a card</p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test10" CardType=@Data.CardData.Type.XBamMetadata>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test10" CardType=@Data.CardData.Type.XBamMetadata>
                     <p>This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. This is text content for this card. </p>
                 </Card>
-                <Card ItemId=@("TestTest") TabId=@(Title) Title="Test11" CardType=@Data.CardData.Type.CSharpCode>
+                <Card ItemId=@("TestTest") TabId=@Id Title="Test11" CardType=@Data.CardData.Type.CSharpCode>
                     <p>This is text content for a card</p>
                 </Card>
             </MasonryGrid>
         </TabPannel>
-        <TabPannel Title="TestTest">
+        <TabPannel Title="TestTest1">
             <h1>Test 2</h1>
         </TabPannel>
-        <TabPannel Title="TestTest">
+        <TabPannel Title="TestTest2">
             <h1>Test 3</h1>
         </TabPannel>
     </ItemsTabsArea>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public string Key {
+        get;
+        init;
+    } = null!;
+
+    [Parameter, EditorRequired]
+    public InspectorTabData.Type Type {
+        get;
+        init;
+    }
+
+    public string Id 
+        => Type.ExternalId.ToString() + Key;
 }

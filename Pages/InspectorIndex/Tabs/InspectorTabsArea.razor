@@ -1,0 +1,52 @@
+﻿@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Tabs
+@inherits TabsArea
+
+<CascadingValue Value="this">
+    <div style="width:100%;background-color:grey;">
+        <div class="btn-toolbar" role="toolbar">
+          @foreach (TabPannel tabPage in Pages) {
+            <button 
+                type="button"
+                class="btn @GetButtonClass(tabPage)"
+                @onclick=@(() => ActivatePage(tabPage))
+                style="border: 3px solid @((tabPage as InspectorTypeFamilyTabPannel)?.Type.TabHilightColor ?? "black");margin-top:1px;margin-left:2px;border-right:0px;border-bottom:0px;">
+                @tabPage.Title
+            </button>
+          }
+        </div>
+    </div>
+    <div style="height:100%">
+        @ChildContent
+        @foreach(InspectorTabData tabData in Xbam.Inspector.Pages.Index.TabState.Values) {
+            <InspectorTypeFamilyTabPannel
+                @ref=_addPannel
+                Title=@tabData.Tab.Name 
+                Key=@tabData.Tab.Key
+                Type=@tabData.TabType
+            />
+        }
+    </div>
+</CascadingValue>
+
+@code {
+    public InspectorTypeFamilyTabPannel _addPannel { 
+        set => _inspectorPannels[value.Type + value.Key] = value;
+    }
+
+    readonly Dictionary<string, InspectorTypeFamilyTabPannel> _inspectorPannels
+        = new();
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+    }
+
+    public void AddInspectorTab(InspectorTabData tabData) {
+        Xbam.Inspector.Pages.Index._addTabToState(tabData);
+        StateHasChanged();
+    }
+
+    protected override string GetButtonClass(object page) {
+        return base.GetButtonClass(page);
+    }
+}

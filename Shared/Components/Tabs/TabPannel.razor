@@ -1,4 +1,5 @@
-﻿@using Xbam.Inspector.Shared.Tabs
+﻿@using Xbam.Inspector.Shared.Components.Tabs
+
 @if (IsTheActivePage) {
     @ChildContent
 }
@@ -14,13 +15,13 @@
         => Parent.ActivePage == this;
 
     [Parameter]
-    public string Title { get; set; }
+    public string Title { get; set; } = null!;
 
     protected override void OnInitialized() {
         if (Parent == null) {
             throw new ArgumentNullException(nameof(Parent), "InspectorTypeFamilyTabPannel must exist within a InspectorTypeFamilyTabsArea");
         }
-        Parent.AddPage(this);
+        Parent._addInitialPannel(this);
         base.OnInitialized();
     }
 }

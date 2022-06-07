@@ -1,18 +1,61 @@
 ﻿@page "/"
+@implements IHandleAfterRender
 @using Xbam.Inspector.Data
-@using Xbam.Inspector.Shared.Layouts
-@using Xbam.Inspector.Shared.Tabs
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Shared.Components.Tabs
 
-<InspectorTabsArea>
-	<InspectorTypeFamilyTabPannel Title="Tab 2"/>
-	<TabPannel Title="Tab 1">
-		<h1>Welcome!</h1>
-		<p>Open a new tab to start inspecting!</p>
+<InspectorTabsArea @ref="_inspectorTabs">
+	<TabPannel Title="Welcome">
+		<h1>Welcome to the XBam(ECSBAMf) Types Inspector!</h1>
+		<p>Open a new tab with the button in the top right to start inspecting! </p>
+		<span><b>Note:</b> You must to enter a search term in the popup or hit the "All" button to see results.</span>
+		<h3>TODO:</h3>
+		<ul>
+			<li>Add close buttons to tabs</li>
+			<li>Load tab content based on id values</li>
+			<li>Clean up full width tab title bar</li>
+			<li>Add popups with full type Key descriptions of multiple kinds in different color codings for all tab types</li>
+			<li>Fix scrolling to just the item inspector area (pin the top and left tab bars)</li>
+			<li>Implement component, model, and model instance type searching</li>
+			<li>Add bar for toggles, specific to each tab type</li>
+			<li>Types Tree/Web Exporer</li>
+			<li>Popout windows for each Item Tab</li>
+			<li>Popout open Inspector Tab in new window(starts a copy of the same inspector with only that one inpsector family type tab open)</li>
+			<li>Settings</li>
+			<li>inspector tabs(the tab part) should have a max width, and should show the end with the front elipsed if it overflows.</li>
+			<li>Scrollable inspector tabs</li>
+			<li>Re-Orderable inspector tabs</li>
+			<li>Scrollable item tabs</li>
+			<li>pinnable item tabs</li>
+			<li>Interactive model instance building and model component attaching/detatching</li>
+		</ul>
 	</TabPannel>
 </InspectorTabsArea>
 
 @code{
-	public static Dictionary<string, TabData> TabState {
-		get;
-	} = new();
+	InspectorTabsArea _inspectorTabs { get; set; }
+	static readonly Dictionary<string, InspectorTabData> _tabState 
+		= new();
+
+	public static IReadOnlyDictionary<string, InspectorTabData> TabState 
+		=> _tabState;
+
+	public static InspectorTabsArea InspectorTabs { get; private set; }
+
+	internal static void _addTabToState(InspectorTabData tabData) {
+		if (tabData?.Tab.Key is null) {
+			throw new ArgumentNullException(nameof(TabIndexData.Key));
+		}
+
+		if (tabData.TabType is null) {
+			throw new ArgumentNullException(nameof(InspectorTabData.TabType));
+		}
+
+		_tabState[tabData.TabType.ExternalId.ToString() + tabData.Tab.Key] = tabData;
+	}
+
+	async Task IHandleAfterRender.OnAfterRenderAsync() {	
+		InspectorTabs = _inspectorTabs;
+	}
 }

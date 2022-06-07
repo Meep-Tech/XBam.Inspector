@@ -77,7 +77,7 @@
 
     protected override void OnInitialized() {
         _state = Pages.Index
-            .TabState.TryToGet(TabId, new())
+            .TabState[TabId]
             .ItemsState.TryToGet(ItemId, new())
             .CardsState.TryToGet(Title, new() {IsExpanded = _passedInForceExpand ?? true});
     }

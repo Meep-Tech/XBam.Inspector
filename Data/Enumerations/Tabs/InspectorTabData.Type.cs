@@ -3,34 +3,46 @@ using Meep.Tech.Data.Reflection;
 using Meep.Tech.Data.Utility;
 
 namespace Xbam.Inspector.Data {
-    public partial class TabData {
+    public partial class InspectorTabData {
         public abstract partial class Type : Enumeration<Type> {
             public class ModelTypeFamilyTab : Type {
                 public static ModelTypeFamilyTab Id { get; }
                     = new();
+
+                public override string TabHilightColor 
+                    => "StaleBlue";
                 ModelTypeFamilyTab()
                     : base(nameof(ModelTypeFamilyTab)) { }
             }
             public class ModelTypeInstancesTab : Type {
+                public override string TabHilightColor 
+                    => "RoyalBlue";
+
                 public static ModelTypeInstancesTab Id { get; }
                     = new();
                 ModelTypeInstancesTab()
                     : base(nameof(ModelTypeInstancesTab)) { }
             }
             public class ComponentsFamilyTab : Type {
+                public override string TabHilightColor 
+                    => "DarkOrange";
+
                 public static ComponentsFamilyTab Id { get; }
                     = new();
                 ComponentsFamilyTab()
                     : base(nameof(ComponentsFamilyTab)) { }
             }
 
+            public virtual string TabHilightColor
+                => "black";
+
             protected Type(string uniqueIdentifier)
                 : base(uniqueIdentifier) { }
 
-            public IEnumerable<TabTypeData> GetTabItemTypes(string optionalSearchTerm = null, bool searchNamespace = false)
+            public IEnumerable<TabIndexData> GetTabItemTypes(string optionalSearchTerm = null, bool searchNamespace = false)
                 => _filterItemTypes(GetAllValidTabItems(), optionalSearchTerm?.ToLower(), searchNamespace);
 
-            protected virtual IEnumerable<TabTypeData> GetAllValidTabItems() => new TabTypeData[] {
+            protected virtual IEnumerable<TabIndexData> GetAllValidTabItems() => new TabIndexData[] {
                 ("Test.Type", "Testing.Prefix"),
                 ("Test.Type2", "Testing.Prefix"),
                 ("Test.Type3", "Testing.Prefix"),
@@ -65,7 +77,7 @@ namespace Xbam.Inspector.Data {
             protected override object UniqueIdCreationLogic(object uniqueIdentifier)
                 => uniqueIdentifier.ToString().ToSentenceCase();
 
-            IEnumerable<TabTypeData> _filterItemTypes(IEnumerable<TabTypeData> input, string searchTerm, bool searchNamespace) 
+            IEnumerable<TabIndexData> _filterItemTypes(IEnumerable<TabIndexData> input, string searchTerm, bool searchNamespace) 
               => (searchTerm is null
                 ? input
                 : searchNamespace
@@ -73,7 +85,7 @@ namespace Xbam.Inspector.Data {
                     .Where(i => $"{i.Prefix}.{i.Name}".ToLower().Contains(searchTerm))
                   : input
                     .Where(i => i.Name.ToLower().Contains(searchTerm)))
-                .OrderBy(t => t.Name);
+                .OrderBy(t => t.SortKey);
         }
     }
 }
