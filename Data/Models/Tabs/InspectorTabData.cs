@@ -5,7 +5,8 @@ namespace Xbam.Inspector.Data {
 
         public Dictionary<string, ItemData> ItemsState {
             get;
-        } = new();
+            internal set;
+        } = null;
 
         /// <summary>
         /// The data of the actual tab part of this tab.

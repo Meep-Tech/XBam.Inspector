@@ -15,6 +15,14 @@ namespace Xbam.Inspector.Data {
                 protected override IEnumerable<TabIndexData> GetAllValidTabItems()
                     => Archetypes.DefaultUniverse.Enumerations.ByType.Keys
                         .Select(t => new TabIndexData(t));
+
+                public override Dictionary<string, ItemData> LoadItems(InspectorTabData tab) {
+                    throw new NotImplementedException();
+                }
+
+                public override Dictionary<string, CardData> LoadItemDataCards(InspectorTabData tab, ItemData item) {
+                    throw new NotImplementedException();
+                }
             }
         }
     }

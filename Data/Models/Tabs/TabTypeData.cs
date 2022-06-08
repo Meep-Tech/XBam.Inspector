@@ -2,7 +2,7 @@
 using Meep.Tech.Data.Reflection;
 
 namespace Xbam.Inspector.Data {
-    public record struct TabIndexData(string Name, string Prefix, bool IsAbstract = false) {
+    public record struct TabIndexData(string FullTypeName, string Name, string Prefix, bool IsAbstract = false) {
         string _shortName = null;
         string _longNamePrefix = null;
         string _shortNamePrefix = null;
@@ -75,26 +75,22 @@ namespace Xbam.Inspector.Data {
             }
         }
 
-        public static implicit operator (string type, string prefix)(TabIndexData value) {
-            return (value.Name, value.Prefix);
-        }
-
-        public static implicit operator (string type, string prefix, bool isAbstract)(TabIndexData value) {
-            return (value.Name, value.Prefix, value.IsAbstract);
-        }
-
+        // TODO: remove after testing
         public static implicit operator TabIndexData((string type, string prefix) value) {
-            return new TabIndexData(value.type, value.prefix);
+            return new TabIndexData(value.prefix + "." + value.type,  value.type, value.prefix);
         }
 
+        // TODO: remove after testing
         public static implicit operator TabIndexData((string type, string prefix, bool isAbstract) value) {
-            return new TabIndexData(value.type, value.prefix, value.isAbstract);
+            return new TabIndexData(value.prefix + "." + value.type, value.type, value.prefix, value.isAbstract);
         }
 
-        public TabIndexData(Type t) : this(default, default, default) {
-            Name = t.ToFullHumanReadableNameString(false);
-            Prefix = t.Namespace;
-            IsAbstract = t.IsAbstract;
-        }
+        public TabIndexData(Type t) 
+            : this(
+                  t.AssemblyQualifiedName,
+                  t.ToFullHumanReadableNameString(false),
+                  t.Namespace,
+                  t.IsAbstract
+            ) {}
     }
 }

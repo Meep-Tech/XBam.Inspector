@@ -1,0 +1,29 @@
+﻿@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Cards.Content
+@inherits DataCardContent;
+
+<table class="table" style="color:white;">
+  <tbody>
+      @foreach(var trait in Archetypes.DefaultUniverse.Archetypes.GetTraits(Archetype)) {
+        <tr>
+          <th scope="row">@trait.name</th>
+          <td>@trait.description</td>
+        </tr>
+      }
+  </tbody>
+</table>
+
+@code {
+    public Archetype Archetype { get; private set; }
+
+    public override object Data { 
+        get => base.Data;
+        set {
+            base.Data = value;
+            Archetype = ((ArchetypeCardData)base.Data).ForArchetype;
+            StateHasChanged();
+        }
+    }
+}

@@ -6,17 +6,15 @@
 @inherits TabPannel
 
 @if (IsTheActivePage) {
-    <TabPannel Title=@Key>
-        <MasonryGrid>
-            @foreach(CardData cardData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState.TryToGet(Key)?.CardsState.Values) {
-                <ItemDataCard 
-                    CardType=cardData.CardType
-                    TabId=@TabId 
-                    ItemId=@Key 
-                    Title=@cardData.Key />
-            }
-        </MasonryGrid>
-    </TabPannel>
+    <MasonryGrid>
+        @foreach(CardData cardData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState[Key].CardsState.Values) {
+            <ItemDataCard 
+                CardType=cardData.Archetype
+                TabId=@TabId 
+                ItemId=@Key 
+                Title=@cardData.Key />
+        }
+    </MasonryGrid>
 }
 
 @code {
@@ -35,16 +33,18 @@
     }
 
     [Parameter, EditorRequired]
-    public string Key {
+    public override string Key {
         get;
         set;
-    }
+    } = null!;
 
     protected override void OnInitialized() {
-        base.OnInitialized();
-        if (!Pages.Index.TabState[TabId].ItemsState.TryGetValue(Key, out State)) {
-            State = Pages.Index.TabState[TabId].ItemsState[Key]
-                = TabType.LoadItemAndCards(Key);
+        var state = Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState[Key];
+        if (state.CardsState is null) {
+            state.CardsState 
+                = TabType.LoadItemDataCards(Xbam.Inspector.Pages.Index.TabState[TabId], state);
         }
+
+        base.OnInitialized();
     }
 }

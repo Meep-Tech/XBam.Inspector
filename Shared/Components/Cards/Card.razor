@@ -26,8 +26,11 @@
 </div>
 
 @code {
-    protected CardData State
-        = new();
+    [Parameter]
+    public CardData State { 
+        get; 
+        set;
+    } = new();
 
     [Parameter]
     public RenderFragment ChildContent {

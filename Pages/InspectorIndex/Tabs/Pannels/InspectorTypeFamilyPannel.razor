@@ -4,15 +4,32 @@
 @inherits TabPannel
 
 @if (IsTheActivePage) {
-    <h1>@Title</h1>
-    <ItemsTabsArea TabId=@Id/>
+    <span>
+        <h3>
+            @Title:
+        </h3>
+        @if(_subTitle is not null) {
+            <h4 style="color:blue">
+                @_subTitle
+            </h4>
+        }
+    </span>
+    <ItemsTabsArea TabId=@Id TabType=@Type UpdatePannelText=@(t => _subTitle = t) />
 }
 
 @code {
+    internal string _subTitle {
+        private get => __subTitle;
+        set {
+            __subTitle = value;
+            StateHasChanged();
+        }
+    } string __subTitle;
+
     [Parameter, EditorRequired]
-    public string Key {
+    public override string Key {
         get;
-        init;
+        set;
     } = null!;
 
     [Parameter, EditorRequired]

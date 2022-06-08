@@ -1,14 +1,16 @@
 ﻿using Meep.Tech.Data;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Xbam.Inspector.Data {
-    public partial class CardData {
-        public string Key {
-            get;
-            init;
-        }
+  public partial class CardData : Model<CardData, CardData.Type> {
 
-        public bool IsExpanded { get; internal set; }
+    [AutoBuild, Required, NotNull]
+    public string Key { get; private set; }
 
-        public Type CardType { get; internal init; }
-    }
+    [AutoBuild]
+    public bool IsExpanded { get; internal set; } = true;
+
+    internal protected CardData() { }
+  }
 }

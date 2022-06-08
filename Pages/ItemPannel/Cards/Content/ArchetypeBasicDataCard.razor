@@ -1,0 +1,57 @@
+﻿@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Cards.Content
+@inherits DataCardContent;
+
+<table class="table" style="color:white;">
+  <tbody>
+    <tr>
+      <th scope="row">Name</th>
+      <td>@Archetype.Id.Name</td>
+    </tr>
+    <tr>
+      <th scope="row">Id</th>
+      <td>
+          @AddDotBreaks(Archetype.Id.Key)
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">System Type</th>
+      <td>
+          @AddDotBreaks(Archetype.Type.ToFullHumanReadableNameString())
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Base Type</th>
+      <td>
+          @AddDotBreaks(Archetype.BaseArchetype.ToFullHumanReadableNameString())
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Model Base</th>
+      <td>
+          @AddDotBreaks(Archetype.ModelBaseType.ToFullHumanReadableNameString())
+      </td>
+    </tr>
+    <tr>
+      <th scope="row">Model Produced</th>
+      <td>
+          @AddDotBreaks(Archetype.ModelTypeProduced.ToFullHumanReadableNameString())
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+@code {
+    public Archetype Archetype { get; private set; }
+
+    public override object Data { 
+        get => base.Data;
+        set {
+            base.Data = value;
+            Archetype = ((ArchetypeCardData)base.Data).ForArchetype;
+            StateHasChanged();
+        }
+    }
+}

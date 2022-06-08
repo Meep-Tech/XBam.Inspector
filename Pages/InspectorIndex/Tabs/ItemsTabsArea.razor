@@ -12,19 +12,27 @@
             <button
                 style="width:100%"
                 type="button"
+                title=@tabPage.Key
                 class="@GetButtonClass(tabPage)"
                 @onclick=@(() => {
+                    var state = Xbam.Inspector.Pages.Index.TabState[TabId];
                     ActivatePage(tabPage);
-                    Xbam.Inspector.Pages.Index.TabState[TabId].CurrentItemId = tabPage.Title;
+                    var tabState = state.ItemsState[(tabPage as ItemPannel).Key];
+                    UpdatePannelText(tabState.Key);
+                    state.CurrentItemId = tabPage.Title;
                 })>
-                @tabPage.Title
+                @(tabPage.Title ?? tabPage.Key)
             </button>
           }
         </div>
         <div style="height:100%;color:white;">
             @ChildContent
             @foreach(ItemData itemData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState.Values) {
-                <ItemPannel TabId=@TabId Key=@itemData.Key/>
+                <ItemPannel 
+                    Title=@itemData.Name
+                    TabId=@TabId
+                    TabType=@TabType
+                    Key=@itemData.Key/>
             }
         </div>
     </div>
@@ -35,6 +43,32 @@
     public string TabId {
         get;
         set;
+    }
+
+    [Parameter, EditorRequired]
+    public InspectorTabData.Type TabType {
+        get;
+        set;
+    }
+
+    [Parameter, EditorRequired]
+    public Action<string> UpdatePannelText {
+        get;
+        set;
+    }
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+        var state = Xbam.Inspector.Pages.Index.TabState[TabId];
+        if (state.ItemsState is null) {
+            state.ItemsState 
+                = TabType.LoadItems(Xbam.Inspector.Pages.Index.TabState[TabId]);
+            if (state.ItemsState.Any()) {
+                UpdatePannelText(state.ItemsState.First().Value.Key);
+            }
+
+            StateHasChanged();
+        }
     }
 
     async Task IHandleAfterRender.OnAfterRenderAsync() {

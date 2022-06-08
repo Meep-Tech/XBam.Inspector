@@ -1,0 +1,13 @@
+﻿@code {
+    [Parameter]
+    public virtual object Data {
+        get;
+        set;
+    }
+
+    public RenderFragment<string> AddDotBreaks
+        = value => {
+            var parts = value.Split('.');
+            return @<span>@foreach(var part in parts) {@part @if(part != parts.Last()) {@(".")<wbr />}}</span>;
+        };
+}

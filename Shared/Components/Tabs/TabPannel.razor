@@ -17,6 +17,11 @@
     [Parameter]
     public string Title { get; set; } = null!;
 
+    public virtual string Key {
+        get => Title;
+        set => Title = value;
+    }
+
     protected override void OnInitialized() {
         if (Parent == null) {
             throw new ArgumentNullException(nameof(Parent), "InspectorTypeFamilyTabPannel must exist within a InspectorTypeFamilyTabsArea");

@@ -1,4 +1,5 @@
-﻿
+﻿@using Meep.Tech.Collections.Generic
+
 <!-- Example:
     <CascadingValue Value="this">
         <div style="width:100%;background-color:gray;">
@@ -18,9 +19,9 @@
 -->
 
 @code {
-    List<TabPannel> _pages = new();
+    OrderedDictionary<string, TabPannel> _pages = new();
 
-    public IReadOnlyList<TabPannel> Pages => _pages;
+    public IReadOnlyList<TabPannel> Pages => _pages.Values.ToList();
 
     [Parameter] 
     public RenderFragment ChildContent { get; set; }
@@ -28,7 +29,7 @@
     public TabPannel ActivePage { get; private set; }
 
     internal void _addInitialPannel(TabPannel tabPage) {
-        _pages.Add(tabPage);
+        _pages.Add(tabPage.Key, tabPage);
         if (_pages.Count == 1) {
             ActivePage = tabPage;
         }
