@@ -7,9 +7,8 @@
 
 @if (IsTheActivePage) {
     <MasonryGrid>
-        @foreach(CardData cardData in Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState[Key].CardsState.Values) {
+        @foreach(CardData cardData in State.CardsState.Values) {
             <ItemDataCard 
-                CardType=cardData.Archetype
                 TabId=@TabId 
                 ItemId=@Key 
                 Title=@cardData.Key />
@@ -39,10 +38,10 @@
     } = null!;
 
     protected override void OnInitialized() {
-        var state = Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState[Key];
-        if (state.CardsState is null) {
-            state.CardsState 
-                = TabType.LoadItemDataCards(Xbam.Inspector.Pages.Index.TabState[TabId], state);
+        State = Xbam.Inspector.Pages.Index.TabState[TabId].ItemsState[Key];
+        if (State.CardsState is null) {
+            State.CardsState 
+                = TabType.LoadItemDataCards(Xbam.Inspector.Pages.Index.TabState[TabId], State);
         }
 
         base.OnInitialized();

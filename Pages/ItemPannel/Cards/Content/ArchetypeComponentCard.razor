@@ -1,0 +1,68 @@
+﻿@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using System.Reflection
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Cards.Content
+@inherits DataCardContent;
+
+<h3>Info:</h3>
+<table class="table" style="color:white;">
+  <tbody>
+    <tr>
+      <th scope="row">Key</th>
+      <td>@AddDotBreaks(@Component.Key)</td>
+    </tr>
+    <tr>
+      <th scope="row">Type</th>
+      <td>@AddDotBreaks(Component.GetType().ToFullHumanReadableNameString())</td>
+    </tr>
+  </tbody>
+</table>
+<h3>Data Fields:</h3>
+<table class="table" style="color:white;">
+  <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Type</th>
+        <th scope="col">Value</th>
+    </tr>
+  </thead>
+  <tbody>
+      @foreach(var field in _getFieldsAndProperties(Component)) {
+        <tr>
+          <th scope="row">@field.name</th>
+          <td title=@field.typeFull>@field.typeShort</td>
+          <td>@field.value</td>
+        </tr>
+      }
+  </tbody>
+</table>
+
+@code {
+    public Archetype.IComponent Component
+        => (State as ArchetypeComponentCardData).Component;
+
+    public override CardData State { 
+        get => base.State;
+        set {
+            base.State = value;
+            StateHasChanged();
+        }
+    }
+
+    IEnumerable<(string name, string typeFull, string typeShort, RenderFragment value)> _getFieldsAndProperties(Archetype.IComponent component) {
+        foreach (MemberInfo member in component.GetType().GetProperties().Cast<MemberInfo>().Concat(component.GetType().GetFields())) {
+            if (member is FieldInfo field) {
+                yield return (field.Name, field.FieldType.ToFullHumanReadableNameString(), field.FieldType.Name, FieldsDataCardPart.GetSimpleStringValue(field.GetValue(component)));
+            } else if (member is PropertyInfo property) {
+                yield return (
+                    property.Name,
+                    property.PropertyType.ToFullHumanReadableNameString(),
+                    property.PropertyType.Name,
+                    property.CanRead
+                        ? FieldsDataCardPart.GetSimpleStringValue(property.GetValue(component))
+                        : null);
+            }
+        }
+    }
+}

@@ -54,7 +54,7 @@ namespace Xbam.Inspector.Data {
       public Func<CardData, RenderFragment> RenderCard
         => card => new(builder => {
           builder.OpenComponent(1, CardComponentType);
-          builder.AddAttribute(1, nameof(DataCardContent.Data), card);
+          builder.AddAttribute(1, nameof(DataCardContent.State), card);
           builder.CloseComponent();
         });
 

@@ -1,13 +1,19 @@
 ﻿@using Meep.Tech.Collections.Generic
+@using Xbam.Inspector.Data
 @using Xbam.Inspector.Shared.Components
 @using Xbam.Inspector.Shared.Components.Cards
 @inherits Card
 
-<Card Title=@Title CardType=@CardType State=@State>
+<Card Title=@Title State=@State>
     @State.Archetype.RenderCard(@State)
 </Card>
 
 @code {
+    // make this no longer a required parameter
+    public override CardData State { 
+        get; 
+        set;
+    }
 
     [Parameter, EditorRequired]
     public string ItemId {
@@ -22,10 +28,11 @@
     }
 
     protected override void OnInitialized() {
-        State = Pages.Index
+        var cardsState = Pages.Index
             .TabState[TabId]
             .ItemsState[ItemId]
-            .CardsState[Title];
+            .CardsState;
+        State = cardsState[Title];
 
         base.OnInitialized();
     }

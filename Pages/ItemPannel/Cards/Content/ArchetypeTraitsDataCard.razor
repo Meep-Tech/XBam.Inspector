@@ -18,11 +18,11 @@
 @code {
     public Archetype Archetype { get; private set; }
 
-    public override object Data { 
-        get => base.Data;
+    public override CardData State { 
+        get => base.State;
         set {
-            base.Data = value;
-            Archetype = ((ArchetypeCardData)base.Data).ForArchetype;
+            base.State = value;
+            Archetype = ((ArchetypeCardData)base.State).ForArchetype;
             StateHasChanged();
         }
     }

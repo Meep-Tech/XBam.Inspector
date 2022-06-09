@@ -43,6 +43,16 @@
             >&NS</button>
         <button 
             class="btn"
+            style="color:white;background-color:@(_abstractOrSplayedOnly ? "green" : "grey");"
+            @onclick=@(() => {
+                _abstractOrSplayedOnly = !_abstractOrSplayedOnly;
+                // don't update the text
+                _onSearchCriteriaChanged(null);
+            })
+            title="Abstract or Splayed Types Only"
+            >AS</button>
+        <button 
+            class="btn"
             style="color:white;background-color:@(_allSearchEnabled ? "green" : "grey");"
             @onclick=@(() => {
                 _allSearchEnabled = !_allSearchEnabled;
@@ -88,7 +98,7 @@
 
 @code {
     int _tabTypeOptionIndex = 0;
-    bool _resultsLoaded, _allSearchEnabled, _resultsAreLoading, _namespaceSearchEnabled;
+    bool _resultsLoaded, _allSearchEnabled, _resultsAreLoading, _namespaceSearchEnabled, _abstractOrSplayedOnly;
     string _searchTerm = "";
     InspectorTabData.Type _selectedTabType;
     IEnumerable<InspectorTabData.Type> _tabTypes;
@@ -126,7 +136,8 @@
             _tabTypeSearchResults 
                 = _selectedTabType.GetTabItemTypes(
                     _allSearchEnabled ? null : _searchTerm,
-                    _namespaceSearchEnabled
+                    _namespaceSearchEnabled,
+                    _abstractOrSplayedOnly
                 );
 
             _resultsAreLoading = false;
@@ -141,6 +152,7 @@
             Xbam.Inspector.Pages.Index.InspectorTabs.ActivatePage(
                 Xbam.Inspector.Pages.Index.InspectorTabs.Pages.First(p => (p as InspectorTypeFamilyPannel)?.Id == tabId)
             );
+            Close();
             Xbam.Inspector.Pages.Index.InspectorTabs._stateHasChanged();
             return;
         }

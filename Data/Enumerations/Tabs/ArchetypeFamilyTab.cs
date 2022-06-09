@@ -1,5 +1,7 @@
 ﻿using Meep.Tech.Collections.Generic;
 using Meep.Tech.Data;
+using Meep.Tech.Data.Reflection;
+
 namespace Xbam.Inspector.Data {
   public partial class InspectorTabData {
     public abstract partial class Type {
@@ -13,14 +15,37 @@ namespace Xbam.Inspector.Data {
         ArchetypeFamilyTab()
             : base(nameof(ArchetypeFamilyTab)) { }
 
-        protected override IEnumerable<TabIndexData> GetAllValidTabItems()
-          => Archetypes.DefaultUniverse.Archetypes.All.ByFullTypeName.Values
-            .Select(a => a.Type)
-            // TODO: this misses mid-tree abstract archetypes like "Weapon.Type" in testing.
+        protected override IEnumerable<TabIndexData> GetAllValidTabItems() {
+          var nonAbstractTypes = Archetypes.DefaultUniverse.Archetypes.All.ByFullTypeName.Values
+            .Select(a => a.Type);
+          var allTypes = nonAbstractTypes
             .Concat(Archetypes.DefaultUniverse.Archetypes.Collections.Select(c => c.RootArchetypeType))
             .Distinct()
             .Where(t => t != null)
-            .Select(t => new TabIndexData(t));
+            .ToHashSet();
+
+          foreach(System.Type type in nonAbstractTypes) {
+            var potentialAbstractBaseType = type.BaseType;
+            if (type.Name == "BuilderFactory" 
+              && potentialAbstractBaseType.GetGenericArguments().LastOrDefault()?.Name == "BuilderFactory"
+              && potentialAbstractBaseType.GetGenericArguments().Last().DeclaringType.Name == typeof(IComponent<>).Name
+            ) {
+              continue;
+            }
+            while (!allTypes.Contains(potentialAbstractBaseType)) {
+              if (potentialAbstractBaseType.Name == typeof(Archetype<,>).Name) {
+                allTypes.Add(potentialAbstractBaseType.GetGenericArguments().Last());
+                break;
+              }
+              else {
+                allTypes.Add(potentialAbstractBaseType);
+              }
+              potentialAbstractBaseType = type.BaseType;
+            }
+          }
+
+          return allTypes.Select(t => new TabIndexData(t));
+        }
 
         public override Dictionary<string, ItemData> LoadItems(InspectorTabData tab) {
           System.Type archetypeBaseType = System.Type.GetType(tab.Tab.FullTypeName)
@@ -61,6 +86,24 @@ namespace Xbam.Inspector.Data {
           );
 
           cards.Add(archetypeTraitsCard, c => c.Key);
+
+          // Make the properties info card
+          CardData propertiesCard = CardData.Types.Get<ArchetypePropertiesCardData.Type>().Make(
+            (nameof(CardData.Key), "Properties and Fields"),
+            (nameof(ArchetypeCardData.ForArchetype), item.Data as Archetype)
+          );
+
+          cards.Add(propertiesCard, c => c.Key);
+
+          foreach(Archetype.IComponent component in (item.Data as Archetype).Components.Values) {
+            // Make the properties info card
+            CardData componentCard = CardData.Types.Get<ArchetypeComponentCardData.Type>().Make(
+              (nameof(CardData.Key), "Component: " + component.GetType().ToFullHumanReadableNameString(false)),
+              (nameof(ArchetypeComponentCardData.Component), component)
+            );
+
+            cards.Add(componentCard, c => c.Key);
+          }
 
           return cards;
         }

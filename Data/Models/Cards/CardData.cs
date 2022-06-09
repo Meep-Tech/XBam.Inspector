@@ -11,6 +11,6 @@ namespace Xbam.Inspector.Data {
     [AutoBuild]
     public bool IsExpanded { get; internal set; } = true;
 
-    internal protected CardData() { }
+    protected CardData() { }
   }
 }

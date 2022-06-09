@@ -1,0 +1,106 @@
+﻿@using Meep.Tech.Data
+@using Meep.Tech.Data.Reflection
+@using Newtonsoft.Json
+@using System.Reflection
+@using Xbam.Inspector.Shared.Components.Cards.Content
+<h3>Fields:</h3>
+<table class="table csharp-fields" style="color:white;">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Type</th>
+        <th scope="col">Value</th>
+        <th scope="col">Attributes</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach(FieldInfo field in Fields) {
+            <tr>
+                <th scope="row" style="color:@(field.IsPublic ? "white" : "grey");">
+                    @DataCardContent.AddDotBreaks(field.Name)
+                </th>
+                <td title=@field.FieldType.ToFullHumanReadableNameString()>
+                    @field.FieldType.Name
+                </td>
+                <td>
+                    @_getFieldValue((field, DataObject))
+                </td>
+                <td>
+                    <span>
+                        @if(field.IsInitOnly) {
+                            <span>Readonly</span>
+                        }
+                        @if(field.IsPublic) {
+                            <span>Public</span>
+                        } else if (field.IsFamily) {
+                            <span>Protected</span>
+                        } else {
+                            <span>Private</span>
+                        }
+                        @foreach(var attr in field.GetCustomAttributes(true).Cast<Attribute>()) {
+                            <span title=@_getAttributeTooltipText(attr)>
+                                @attr.GetType().Name
+                            </span>
+                        }
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    internal static readonly JsonSerializerSettings _jsonSettings
+        = Archetypes.DefaultUniverse.ModelSerializer.Options.BuildJsonSerializationSettings(s =>
+            s.Error = (s, e) => e.ErrorContext.Handled = false
+        );
+
+    [Parameter]
+    public IEnumerable<FieldInfo> Fields {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public object DataObject {
+        get;
+        set;
+    }
+
+    string _getAttributeTooltipText(Attribute attribute) {
+        string text = attribute.GetType().ToFullHumanReadableNameString();
+        text += '\n';
+        text += '\n';
+        text += JsonConvert.SerializeObject(attribute, _jsonSettings);
+
+        return text;
+    }
+
+    RenderFragment<(FieldInfo, object)> _getFieldValue => input => {
+        (FieldInfo field, object @object) = input;
+        string returnValue = null;
+        var value = field.GetValue(@object);
+        if (value is Delegate || value is MemberInfo) {
+            return GetSimpleStringValue(value);
+        }
+        try
+        {
+            returnValue = JsonConvert.SerializeObject(value, _jsonSettings);
+        } catch {
+            return GetSimpleStringValue(value);
+        }
+
+        return @<span>@DataCardContent.AddDotBreaks(returnValue)</span>;
+    };
+
+    public static RenderFragment<object> GetSimpleStringValue => (object item) => {
+        string intial = item?.ToString() ?? "NULL";
+        if (intial == item?.GetType().ToString()) {
+            return @<span title=@intial>@item.GetType().Name</span>;
+        } else if (intial.StartsWith(item?.GetType().Namespace ?? "-----------")) {
+            return @<span title=@intial>@item.GetType().Name</span>;
+        }
+
+        return @<span>@DataCardContent.AddDotBreaks(intial)</span>;
+    };
+}

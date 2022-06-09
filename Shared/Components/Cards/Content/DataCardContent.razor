@@ -1,11 +1,13 @@
-﻿@code {
-    [Parameter]
-    public virtual object Data {
+﻿@using Xbam.Inspector.Data
+
+@code {
+    [Parameter, EditorRequired]
+    public virtual CardData State {
         get;
         set;
     }
 
-    public RenderFragment<string> AddDotBreaks
+    public static RenderFragment<string> AddDotBreaks
         = value => {
             var parts = value.Split('.');
             return @<span>@foreach(var part in parts) {@part @if(part != parts.Last()) {@(".")<wbr />}}</span>;

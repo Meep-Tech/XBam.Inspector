@@ -1,0 +1,179 @@
+﻿@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using System.Reflection
+@using Meep.Tech.Data.Utility
+@using Newtonsoft.Json
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Cards.Content
+@inherits DataCardContent;
+
+<div style="display:flex;flex-direction:row;">
+    <input 
+        type="text" 
+        id="search" 
+        class="form-control" 
+        @oninput=@((ChangeEventArgs e) => _onSearchCriteriaChanged(e.Value?.ToString() ?? ""))/>
+    <select 
+        style="width:auto;" 
+        class="form-select"
+        @onchange=@((ChangeEventArgs e) => {
+            (State as ArchetypePropertiesCardData).SearchAccessLevel = Enum.Parse<AccessLevel>(e.Value.ToString());
+            // changes and don't update the text
+            _onSearchCriteriaChanged(null);
+        })>
+        @foreach(AccessLevel level in Enum.GetValues<AccessLevel>()) {
+            <option
+                value=@level
+                selected=@(level == (State as ArchetypePropertiesCardData).SearchAccessLevel)>
+                @level.ToString().ToSentenceCase()
+            </option>
+        }
+    </select>
+    <button
+        class="btn"
+        style="color:white;background-color:@((State as ArchetypePropertiesCardData).SearchOverrideableOnly ? "green" : "grey");"
+        @onclick=@(() => {
+            (State as ArchetypePropertiesCardData).SearchOverrideableOnly =
+                !(State as ArchetypePropertiesCardData).SearchOverrideableOnly;
+            // don't update the text
+            _onSearchCriteriaChanged(null);
+        })
+        title="Overridable Only: Only Show Virtual/Abstract/Overrideable Items in the Search">
+        OO
+    </button>
+    <button
+        class="btn"
+        style="color:white;background-color:@((State as ArchetypePropertiesCardData).SearchDeclaredOnly  ? "green" : "grey");"
+        @onclick=@(() => {
+            (State as ArchetypePropertiesCardData).SearchDeclaredOnly =
+                !(State as ArchetypePropertiesCardData).SearchDeclaredOnly;
+            // don't update the text
+            _onSearchCriteriaChanged(null);
+        })
+        title="Declared Only: Only Show Items Declared or Overriden by This Type">
+        DO
+    </button>
+</div>
+@if(_propertiesAndFields.Any(t => t is FieldInfo)) {
+    <FieldsDataCardPart DataObject=@Archetype Fields=@(_propertiesAndFields.Where(t => t is FieldInfo).Cast<FieldInfo>()) />
+}
+@if(_propertiesAndFields.Any(t => t is PropertyInfo)) {
+    <PropertiesDataCardPart DataObject=@Archetype Properties=@(_propertiesAndFields.Where(t => t is PropertyInfo).Cast<PropertyInfo>()) />
+}
+
+@code {
+    public enum AccessLevel{
+        All,
+        Public,
+        Protected,
+        PublicAndProtected,
+        Private
+    }
+
+    bool _resultsLoaded, _resultsAreLoading;
+    IEnumerable<MemberInfo> _propertiesAndFields
+        = Enumerable.Empty<MemberInfo>();
+
+    public Archetype Archetype { get; private set; }
+
+    public override CardData State { 
+        get => base.State;
+        set {
+            var state = (ArchetypePropertiesCardData)value;
+            base.State = state;
+            Archetype = state.ForArchetype;
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized() {
+        _onSearchCriteriaChanged(null);
+    }
+
+    /// <summary>
+    /// Passing in null does not update the search text. passing in empty does
+    /// </summary>
+    void _onSearchCriteriaChanged(string newText) {
+        (State as ArchetypePropertiesCardData).SearchTerm = newText 
+            ?? (State as ArchetypePropertiesCardData).SearchTerm;
+        _resultsLoaded = false;
+        _resultsAreLoading = true;
+        StateHasChanged();
+
+        AccessLevel accessLevel = (State as ArchetypePropertiesCardData).SearchAccessLevel;
+        BindingFlags bindingFlags;
+        if (accessLevel != AccessLevel.All) {
+            bindingFlags = System.Reflection.BindingFlags.Instance;
+            if (accessLevel == AccessLevel.Public || accessLevel == AccessLevel.PublicAndProtected) {
+                bindingFlags |= System.Reflection.BindingFlags.Public;
+            }
+            if (accessLevel == AccessLevel.Private || accessLevel == AccessLevel.Protected || accessLevel == AccessLevel.PublicAndProtected) {
+                bindingFlags |= System.Reflection.BindingFlags.NonPublic;
+            }
+        } else {
+            bindingFlags = System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Public;
+        }
+
+        if ((State as ArchetypePropertiesCardData).SearchDeclaredOnly) {
+            bindingFlags |= BindingFlags.DeclaredOnly;
+        }
+
+        // get most fields
+        _propertiesAndFields = Archetype.Type
+            .GetProperties(bindingFlags)
+            .Cast<MemberInfo>()
+            .Concat(Archetype.Type.GetFields(bindingFlags));
+
+        // check for virtual only
+        if ((State as ArchetypePropertiesCardData).SearchOverrideableOnly) {
+            _propertiesAndFields 
+                = _propertiesAndFields.Where(f => f is PropertyInfo p 
+                    && ((p.GetMethod?.IsVirtual ?? false) 
+                        || (p.SetMethod?.IsVirtual ?? false))
+                    && (!(p.GetMethod?.IsFinal 
+                        ?? p.SetMethod?.IsFinal ?? false)));
+        }
+
+        // for less accessable searches:
+        if(accessLevel != AccessLevel.All) {
+            if (accessLevel == AccessLevel.PublicAndProtected) {
+                _propertiesAndFields 
+                    = _propertiesAndFields.Where(t => t is FieldInfo f
+                        ? f.IsPublic || f.IsFamily
+                        : t is PropertyInfo p
+                            && ((p.GetMethod?.IsPublic ?? false)
+                                || (p.GetMethod?.IsFamily ?? false)
+                                || (p.GetMethod?.IsFamilyOrAssembly ?? false)
+                                || (p.SetMethod?.IsPublic ?? false)
+                                || (p.SetMethod?.IsFamily ?? false)
+                                || (p.SetMethod?.IsFamilyOrAssembly ?? false))
+                    );
+            } else if (accessLevel == AccessLevel.Protected) {
+                _propertiesAndFields 
+                    = _propertiesAndFields.Where(t => t is FieldInfo f
+                        ? f.IsFamily
+                        : t is PropertyInfo p
+                            && ((p.GetMethod?.IsFamily ?? false)
+                                || (p.GetMethod?.IsFamilyOrAssembly ?? false)
+                                || (p.SetMethod?.IsFamily ?? false)
+                                || (p.SetMethod?.IsFamilyOrAssembly ?? false))
+                    );
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace((State as ArchetypePropertiesCardData).SearchTerm)) {
+            var normalizedSearchTerm = (State as ArchetypePropertiesCardData).SearchTerm.ToLower(); 
+            _propertiesAndFields 
+                = _propertiesAndFields.Where(f => f.Name.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        _propertiesAndFields 
+          = _propertiesAndFields.OrderBy(m => m.Name);
+
+        _resultsAreLoading = false;
+        _resultsLoaded = true;
+        StateHasChanged();
+    }
+}

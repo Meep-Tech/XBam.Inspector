@@ -1,0 +1,138 @@
+﻿@using Meep.Tech.Data
+@using Meep.Tech.Data.Reflection
+@using Newtonsoft.Json
+@using System.Reflection
+@using Xbam.Inspector.Shared.Components.Cards.Content
+
+<h3>Properties:</h3>
+<table class="table csharp-fields" style="color:white;">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Type</th>
+        <th scope="col">Value</th>
+        <th scope="col">Attributes</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach(PropertyInfo property in Properties) {
+            <tr>
+                <th title=@_getDeclaringTypesText(property) scope="row" style="color:@((property.GetMethod?.IsPublic ?? false) ? "white" : "grey");">
+                    @DataCardContent.AddDotBreaks(property.Name)
+                </th>
+                <td title=@property.PropertyType.ToFullHumanReadableNameString()>
+                    @property.PropertyType.Name
+                </td>
+                <td>
+                    @if (property.CanRead) {
+                        @_getPropertyValue((property, DataObject))
+                    } else {
+                        <span style="color:dimgrey;font-style:italic">Read-Only</span>
+                    }
+                </td>
+                <td>
+                    <span>
+                        @if((property.GetMethod?.IsVirtual ?? false) || (property.SetMethod?.IsVirtual ?? false)) {
+                            @if ((property.GetMethod?.IsFinal ?? false) || (property.SetMethod?.IsFinal ?? false)) {
+                                <span>Sealed-Virtual</span>
+                            } else {
+                                <span>Virtual</span>
+                            }
+                        }
+                        @if(!property.CanRead) {
+                            <span>Write-Only</span>
+                        } else {
+                            if(property.GetMethod.IsPublic) {
+                                <span>Public-Get</span>
+                            } else if (property.GetMethod.IsFamily || property.GetMethod.IsFamilyOrAssembly) {
+                                <span>Protected-Get</span>
+                            } else {
+                                <span>Private-Get</span>
+                            }
+                        }
+                        @if(!property.CanWrite) {
+                            <span>Read-Only</span>
+                        } else {
+                            @if(property.SetMethod.IsPublic) {
+                                <span>Public-Set</span>
+                            } else if (property.SetMethod.IsFamily || property.SetMethod.IsFamilyOrAssembly) {
+                                <span>Protected-Set</span>
+                            } else {
+                                <span>Private-Set</span>
+                            }
+                        }
+                        @foreach(var attr in property.GetCustomAttributes(true).Cast<Attribute>()) {
+                            <span title=@_getAttributeTooltipText(attr)>
+                                @attr.GetType().Name
+                            </span>
+                        }
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+
+    [Parameter]
+    public IEnumerable<PropertyInfo> Properties {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public object DataObject {
+        get;
+        set;
+    }
+
+    string _getAttributeTooltipText(Attribute attribute) {
+        string text = attribute.GetType().ToFullHumanReadableNameString();
+        text += '\n';
+        text += '\n';
+        text += JsonConvert.SerializeObject(attribute, FieldsDataCardPart._jsonSettings);
+
+        return text;
+    }
+
+    RenderFragment<(PropertyInfo, object)> _getPropertyValue => input => {
+        (PropertyInfo field, object @object) = input;
+        string returnValue = null;
+        var value = field.GetValue(@object);
+        if (value is Delegate || value is MemberInfo) {
+            return FieldsDataCardPart.GetSimpleStringValue(value);
+        }
+        try
+        {
+            returnValue = JsonConvert.SerializeObject(value, FieldsDataCardPart._jsonSettings);
+        } catch {
+            return FieldsDataCardPart.GetSimpleStringValue(value);
+        }
+
+        return @<span>@DataCardContent.AddDotBreaks(returnValue)</span>;
+    };
+
+    string _getDeclaringTypesText(PropertyInfo property) {
+        string declaringTypesText = "Declared By:";
+        if (property.CanRead) {
+            declaringTypesText += "\n Getter: ";
+            if (property.GetMethod?.GetBaseDefinition() is MethodInfo baseGet && baseGet != property.GetMethod) {
+                declaringTypesText += property.GetMethod.GetBaseDefinition().DeclaringType.ToFullHumanReadableNameString();
+            } else {
+                declaringTypesText += property.DeclaringType.ToFullHumanReadableNameString();
+            }
+        }
+
+        if (property.CanWrite) {
+            declaringTypesText += "\n Setter: ";
+            if (property.SetMethod?.GetBaseDefinition() is MethodInfo baseSet && baseSet != property.SetMethod) {
+                declaringTypesText += property.SetMethod.GetBaseDefinition().DeclaringType.ToFullHumanReadableNameString();
+            } else {
+                declaringTypesText += property.DeclaringType.ToFullHumanReadableNameString();
+            }
+        }
+
+        return declaringTypesText;
+    }
+}

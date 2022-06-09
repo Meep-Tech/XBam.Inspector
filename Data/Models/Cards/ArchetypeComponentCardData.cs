@@ -3,14 +3,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Xbam.Inspector.Data {
-  public partial class ArchetypeCardData : CardData {
+    public partial class ArchetypeComponentCardData : CardData {
 
     [AutoBuild, Required, NotNull]
-    public Archetype ForArchetype {
-      get;
-      private set;
-    }
-
-    protected ArchetypeCardData() : base() { }
+    public Archetype.IComponent Component { get; private set; }
   }
 }
