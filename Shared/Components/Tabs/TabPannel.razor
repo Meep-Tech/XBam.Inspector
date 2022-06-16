@@ -15,11 +15,17 @@
         => Parent.ActivePage == this;
 
     [Parameter]
-    public string Title { get; set; } = null!;
+    public virtual string Title { get; set; } = null!;
 
     public virtual string Key {
         get => Title;
         set => Title = value;
+    }
+
+    [Parameter]
+    public virtual string HilightColor {
+        get;
+        set;
     }
 
     protected override void OnInitialized() {

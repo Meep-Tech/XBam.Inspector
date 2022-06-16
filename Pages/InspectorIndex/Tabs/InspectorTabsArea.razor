@@ -11,13 +11,13 @@
                 type="button"
                 class="btn @GetButtonClass(tabPage)"
                 @onclick=@(() => ActivatePage(tabPage))
-                style="border: 3px solid @((tabPage as InspectorTypeFamilyPannel)?.Type.TabHilightColor ?? "black");margin-top:1px;margin-left:2px;border-right:0px;border-bottom:0px;">
+                style="border: 3px solid @(tabPage.HilightColor ?? "black");margin-top:1px;margin-left:2px;border-right:0px;border-bottom:0px;">
                 @tabPage.Title
             </button>
           }
         </div>
     </div>
-    <div style="height:100%">
+    <div><!-- style="height:100%"-->
         @ChildContent
         @foreach(InspectorTabData tabData in Xbam.Inspector.Pages.Index.TabState.Values) {
             <InspectorTypeFamilyPannel

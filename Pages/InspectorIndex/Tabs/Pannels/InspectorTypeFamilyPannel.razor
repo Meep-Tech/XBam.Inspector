@@ -4,17 +4,19 @@
 @inherits TabPannel
 
 @if (IsTheActivePage) {
-    <span>
-        <h3>
-            @Title:
-        </h3>
-        @if(_subTitle is not null) {
-            <h4 style="color:blue">
-                @_subTitle
-            </h4>
-        }
-    </span>
-    <ItemsTabsArea TabId=@Id TabType=@Type UpdatePannelText=@(t => _subTitle = t) />
+    <div class="inspector-family-pannel" style="height: calc(100vh - 110px);background-color:#333333;">
+        <div class="inspector-tab-header" style="background-color:whitesmoke;">
+            <h3>
+                @Title:
+            </h3>
+            @if(_subTitle is not null) {
+                <h4 style="color:blue">
+                    @_subTitle
+                </h4>
+            }
+        </div>
+        <ItemsTabsArea TabId=@Id TabType=@Type UpdatePannelText=@(t => _subTitle = t) />
+    </div>
 }
 
 @code {
@@ -38,6 +40,9 @@
         init;
     }
 
+    public override string HilightColor
+        => Type.TabHilightColor;
+
     public string Id 
-        => Type.ExternalId.ToString() + Key;
+    => Type.ExternalId.ToString() + Key;
 }

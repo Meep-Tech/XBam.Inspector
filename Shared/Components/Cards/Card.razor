@@ -7,7 +7,7 @@
         style="background-color: @(CurrentMainColor);">
         <nav 
             class="navbar navbar-expand-lg navbar-dark justify-content-between" 
-            style="min-width:300px;height:35px;background-color:@(CurrentMainColor);">
+            style="height:35px;background-color:@(CurrentMainColor);">
             <span class="navbar-brand mb-0 h1" style="margin-left:10px">@Title</span>
             <button
                 title="Toggle Expanded"
@@ -18,7 +18,7 @@
         @if(IsExpanded) {
             <div
                 class="card-content" 
-                style="overflow:auto;color:white;min-width:300px;min-height:200px;background-color:#222222;padding:5px">
+                style="height:calc(@(GetHeightValue(Height))px - 35px - 10px);overflow:auto;color:white;background-color:#222222;padding:5px">
                 @ChildContent
             </div>
         }
@@ -26,6 +26,12 @@
 </div>
 
 @code {
+    public enum Heights {
+        Short,
+        Middle,
+        Tall
+    }
+
     [Parameter]
     public virtual CardData State { 
         get; 
@@ -38,6 +44,18 @@
         set; 
     }
 
+    [Parameter]
+    public Heights Height {
+        get => _height 
+            ??= (State?.Height ?? Heights.Middle);
+        set {
+            _height = value;
+            if (State is not null) {
+                State.Height = value;
+            }
+        }
+    } Heights? _height;
+
     [Parameter, EditorRequired]
     public string Title {
         get;
@@ -46,12 +64,13 @@
 
     [Parameter]
     public bool IsExpanded {
-        get => DomProvidedIsExpandedValue 
-            ?? State.IsExpanded;
+        get => IsExpandedOverride 
+            ?? State?.IsExpanded
+            ?? true;
         init {
-            DomProvidedIsExpandedValue = value;
+            IsExpandedOverride = value;
         }
-    } protected bool? DomProvidedIsExpandedValue;
+    } protected bool? IsExpandedOverride;
 
     protected string ExpandToggleSymbol
         => IsExpanded 
@@ -59,12 +78,26 @@
             : "+";
 
     protected string CurrentMainColor
-        => IsExpanded ? State.Archetype.ExpandedColor : State.Archetype.CollapsedColor;
+        => IsExpanded 
+            ? State?.Archetype.ExpandedColor ?? "gray"
+            : State?.Archetype.CollapsedColor ?? "black";
 
     protected void ToggleExpanded(bool? @override = null){
-        State.IsExpanded = (@override ?? !IsExpanded);
+        if (State is not null) {
+            State.IsExpanded = (@override ?? !IsExpanded);
+        } else {
+            IsExpandedOverride = @override ?? !IsExpanded;
+        }
 
-        DomProvidedIsExpandedValue = null;
+        IsExpandedOverride = null;
         StateHasChanged();
     }
+
+    public static string GetHeightValue(Heights height)
+        => height switch {
+            Heights.Tall => "900",
+            Heights.Middle => "600",
+            Heights.Short => "300",
+            _ => throw new Exception()
+        };
 }

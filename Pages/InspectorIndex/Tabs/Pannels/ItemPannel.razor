@@ -2,16 +2,19 @@
 @using Xbam.Inspector.Data
 @using Xbam.Inspector.Pages.ItemPannel.Cards
 @using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Shared.Components.Cards
 @using Xbam.Inspector.Shared.Components.Tabs
 @inherits TabPannel
 
 @if (IsTheActivePage) {
     <MasonryGrid>
         @foreach(CardData cardData in State.CardsState.Values) {
-            <ItemDataCard 
-                TabId=@TabId 
-                ItemId=@Key 
-                Title=@cardData.Key />
+            <MasonryCard Height=@cardData.Height>
+                <ItemDataCard 
+                    TabId=@TabId 
+                    ItemId=@Key 
+                    Title=@cardData.Key />
+            </MasonryCard>
         }
     </MasonryGrid>
 }

@@ -1,0 +1,56 @@
+﻿@using Meep.Tech.Data
+@using Newtonsoft.Json
+@using Xbam.Inspector.Data
+@using Meep.Tech.Data.Utility
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs
+@using Xbam.Inspector.Pages.InspectorIndex.Tabs.Pannels
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Shared.Components.Tabs
+
+<Modal
+    Title="Settings" 
+    IsEnabled=@IsEnabled 
+    Close=@Close>
+    <div class="settings-pannel">
+        <span>
+            <label title="The folder containing the /data/ folder that the loader should pull xbam mods and plugins from." for="parentDataFolder">
+                Parent Data Folder:
+            </label>
+            <input 
+                type="text" 
+                id="parentDataFolder" 
+                class="form-control"
+                value=@MauiProgram.Options.ParentDataFolder
+                title="The folder containing the /data/ folder that the loader should pull xbam mods and plugins from."
+                @oninput=@(e => {
+                    MauiProgram.Options.ParentDataFolder = (e.Value as string ?? "");
+                    _save();
+                })/>
+            <button 
+                class="btn"
+                style="color:white;background-color:@(MauiProgram.Options.IncludeExampleXBamTypes ? "green" : "grey");"
+                @onclick=@(() => {
+                    MauiProgram.Options.IncludeExampleXBamTypes = !MauiProgram.Options.IncludeExampleXBamTypes;
+                    _save();
+                })
+                title="Include Meep.Tech.Data.Examples for example types">
+                Include Example Types on Startup
+            </button>
+        </span>
+    </div>
+</Modal>
+
+@code {
+    [Parameter, EditorRequired]
+    public bool IsEnabled { get; set; }
+
+    [Parameter, EditorRequired]
+    public Action Close { get; set; }
+
+    void _save() {
+        File.WriteAllText(
+            MauiProgram.InspectorConfigFileLocation,
+            JsonConvert.SerializeObject(MauiProgram.Options, Formatting.Indented)
+        );
+    }
+}

@@ -39,9 +39,10 @@ namespace Xbam.Inspector.Data {
           : base(identity, expandedColor, collapsedColor) { }
       }
 
-
       public string ExpandedColor { get; }
       public string CollapsedColor { get; }
+      public virtual Card.Heights DefaultCardHeight { get; }
+            = Card.Heights.Middle;
 
       /// <summary>
       /// The component type used to render the card contents.

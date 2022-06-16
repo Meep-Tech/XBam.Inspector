@@ -1,9 +1,13 @@
 ﻿@using Xbam.Inspector.Pages.AddNewInspectorTab
+@using Xbam.Inspector.Pages.Settings
 @using Xbam.Inspector.Shared.Components
 
 <AddModal
     IsEnabled=@_addModalIsEnabled
     Close=@_onAddTabModalClose/>
+<SettingsModal
+    IsEnabled=@_settingsModalIsEnabled
+    Close=@_onSettingsModalClose/>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary justify-content-between" style="height:35px">
     <span class="navbar-brand mb-0 h1" style="margin-left:10px">XBam Inspector</span>
@@ -28,7 +32,7 @@
 </nav>
 
 @code {
-    bool _addModalIsEnabled
+    bool _addModalIsEnabled, _settingsModalIsEnabled
         = false;
 
     void _onAddTabClick() {
@@ -41,6 +45,12 @@
     }
 
     void _onSettingsClick() {
-        Console.WriteLine("Clicked Settings Button");
+        _settingsModalIsEnabled = true;
     }
+
+    void _onSettingsModalClose() {
+        _settingsModalIsEnabled = false;
+        StateHasChanged();
+    }
+
 }

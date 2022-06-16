@@ -8,6 +8,10 @@ body{
     padding-bottom: 130px;
 }
 
+main {
+    background-color: #333333;
+}
+
 #app {
     display: flex;
     flex-grow: 1;
@@ -85,22 +89,20 @@ a, .btn-link {
 }
 
 .card-container {
-    padding-right: initial;
-    padding-left: initial;
     margin: 7px;
-    width: auto !important;
-    min-width: 300px;
-    max-width: 621px;
 }
 
 .card-container.closed {
-    order: 2;
+    order: 99;
+}
+
+.card-content {
+    max-height: 900px;
+    max-width: 600px;
+    overflow: auto;
 }
 
 .card {
-    width: auto !important;
-    min-width: 300px;
-    max-width: 621px;
     min-height: 35px;
     padding: 1px;
 }
@@ -126,4 +128,47 @@ a, .btn-link {
 }
 .card-content table.csharp-fields tr td:nth-of-type(1) {
     width: 80px;
+}
+
+#masonry-grid {
+    margin:0px;
+    /*height: 100vh;
+    width: 100vh;*/
+}
+
+#masonry-grid .masonry-card {
+    width: 600px;
+}
+
+.grid-item {
+    width: 160px;
+    height: 120px;
+    background: #D26;
+    border: 2px solid #333;
+    border-color: hsla(0, 0%, 0%, 0.5);
+    border-radius: 5px;
+}
+
+.grid-item--width2 {
+    width: 320px;
+}
+
+.grid-item--width3 {
+    width: 480px;
+}
+
+.grid-item--width4 {
+    width: 640px;
+}
+
+.grid-item--height2 {
+    height: 200px;
+}
+
+.grid-item--height3 {
+    height: 260px;
+}
+
+.grid-item--height4 {
+    height: 360px;
 }
