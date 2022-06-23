@@ -61,6 +61,12 @@
         get;
         set; 
     }
+    
+    [Parameter]
+    public string Key {
+        get => _key ??= Title;
+        set => _key = value; 
+    } string _key;
 
     [Parameter]
     public bool IsExpanded {

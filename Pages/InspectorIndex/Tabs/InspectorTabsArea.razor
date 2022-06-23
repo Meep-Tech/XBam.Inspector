@@ -19,7 +19,7 @@
     </div>
     <div><!-- style="height:100%"-->
         @ChildContent
-        @foreach(InspectorTabData tabData in Xbam.Inspector.Pages.Index.TabState.Values) {
+        @foreach(InspectorTabData tabData in Xbam.Inspector.Pages.Index.TabState.Values.Where(t => t.TabType is InspectorFamilyTab.Type)) {
             <InspectorTypeFamilyPannel
                 @ref=_addPannel
                 Title=@tabData.Tab.Name 

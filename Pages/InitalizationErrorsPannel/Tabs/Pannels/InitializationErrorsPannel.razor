@@ -1,0 +1,97 @@
+﻿@using Meep.Tech.Data.Configuration
+@using Meep.Tech.Collections.Generic
+@using Xbam.Inspector.Shared.Components.Cards
+@using Xbam.Inspector.Shared.Components.Tabs
+@using Xbam.Inspector.Shared.Components
+@using Xbam.Inspector.Data;
+@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using static Xbam.Inspector.Pages.Index;
+@inherits TabPannel
+
+@if (IsTheActivePage) {
+	<div id="errors" style="height:1000px">
+		<MasonryGrid>
+			@{var index = 0;}
+			@foreach(Loader.Failure failure in Archetypes.DefaultUniverse.Loader.Failures) {
+				<MasonryCard>
+					@{
+						var key = failure.XbamType + ": " + failure.SystemType.ToFullHumanReadableNameString(false) + ":" + index++.ToString();
+						var cardState = State.CardsState[key] as XBamInitializationErrorCardData;
+					}
+					<Card Key=@key Title=@cardState.Title State=@cardState>
+						<h3><b>XBam Type:</b> @failure.XbamType</h3>
+						<h4><b>System Type:</b> @failure.SystemType.ToFullHumanReadableNameString()</h4>
+						@{var errorText = _getErrorText(failure);}
+						<div title=@errorText @ondblclick=@(() => _onClickErrorMessage(failure.SystemType))>
+							@errorText;
+						</div>
+					</Card>
+				</MasonryCard>
+			}
+		</MasonryGrid>
+	</div>
+}
+
+@code {
+	HashSet<System.Type> _toggledErrors
+			= new();
+
+	public override string Title {
+		get => $"XBam Loader Returned Errors ({Archetypes.DefaultUniverse.Loader.Failures.Count()})!!!";
+		set => base.Title = value;
+	}
+
+	public override string HilightColor{
+		get => "red";
+		set => base.HilightColor = value;
+	}
+
+	ItemData State {
+		get;
+		set;
+	}
+
+	protected override void OnInitialized() {
+		base.OnInitialized();
+		if (TabState.TryGetValue(Key, out var existingState)) {
+			State = existingState.ItemsState["_errors"];
+		} else {
+			int index = 0;
+			Pages.Index._addTabToState(new InspectorTabData {
+				TabType = InspectorTabData.Type.InitialXBamErrorsTab.Id,
+				Tab = new(Title, Title, ""),
+				ItemsState = new() {
+					{"_errors", new() {
+						CardsState = Archetypes.DefaultUniverse.Loader.Failures.ToDictionary(
+							f => f.XbamType + ": " + f.SystemType.ToFullHumanReadableNameString(false) + ":" + index.ToString(),
+							f => Archetypes<XBamInitializationErrorCardData.Type>._.Make(
+								(
+									new(nameof(CardData.Key),
+									(f.XbamType + ": " + f.SystemType.ToFullHumanReadableNameString(false)) + ":" + index++.ToString())
+								), (
+									new(nameof(XBamInitializationErrorCardData.Title),
+									f.XbamType + ": " + f.SystemType.ToFullHumanReadableNameString(false))
+								)
+							)
+						)
+					}}
+				}
+			});
+
+			State = Pages.Index.TabState[InspectorTabData.Type.InitialXBamErrorsTab.Id.ExternalId.ToString() + Key].ItemsState["_errors"];
+		}
+	}
+
+	void _onClickErrorMessage(System.Type forType) {
+		if (_toggledErrors.Contains(forType)) {
+			_toggledErrors.Remove(forType);
+		} else {
+			_toggledErrors.Add(forType);
+		}
+	}
+
+	string _getErrorText(Loader.Failure failure)
+		=> _toggledErrors.Contains(failure.SystemType) ? failure.Exception.ToString() : failure.ToString();
+
+}

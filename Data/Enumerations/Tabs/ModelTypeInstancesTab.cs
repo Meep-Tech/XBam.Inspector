@@ -1,7 +1,8 @@
 ﻿namespace Xbam.Inspector.Data {
     public partial class InspectorTabData {
         public abstract partial class Type {
-            public class ModelTypeInstancesTab : Type {
+            public class ModelTypeInstancesTab : InspectorFamilyTab.Type {
+
                 public override string TabHilightColor 
                     => "RoyalBlue";
 

@@ -16,11 +16,12 @@
 
     [Parameter]
     public virtual string Title { get; set; } = null!;
-
+    
+    [Parameter]
     public virtual string Key {
-        get => Title;
-        set => Title = value;
-    }
+        get => _key ??= Title;
+        set => _key = value;
+    } string _key;
 
     [Parameter]
     public virtual string HilightColor {

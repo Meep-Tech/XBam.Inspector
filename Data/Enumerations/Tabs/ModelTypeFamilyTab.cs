@@ -1,7 +1,7 @@
 ﻿namespace Xbam.Inspector.Data {
     public partial class InspectorTabData {
         public abstract partial class Type {
-            public class ModelTypeFamilyTab : Type {
+            public class ModelTypeFamilyTab : InspectorFamilyTab.Type {
                 public static ModelTypeFamilyTab Id { get; }
                     = new();
 

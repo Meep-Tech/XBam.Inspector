@@ -1,0 +1,86 @@
+﻿@using Meep.Tech.Data
+@using Meep.Tech.Data.Reflection
+@using Newtonsoft.Json
+@using System.Reflection
+@using Xbam.Inspector.Shared.Components.Cards.Content
+<h3>Fields:</h3>
+<table class="table csharp-fields" style="color:white;">
+    <thead>
+    <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Return Type</th>
+        <th scope="col">Parameters</th>
+        <th scope="col">Attributes</th>
+    </tr>
+    </thead>
+    <tbody>
+        @foreach(MethodInfo method in Methods) {
+            <tr>
+                <th scope="row" style="color:@(method.IsPublic ? "white" : "grey");">
+                    @DataCardContent.AddDotBreaks(method.Name)
+                </th>
+                <td title=@method.ReturnType.ToFullHumanReadableNameString()>
+                    @method.ReturnType.Name
+                </td>
+                <td>
+                    @foreach(var parameter in method.GetParameters()) {
+                        <ol>
+                            <li>
+                                <span title=@parameter.ParameterType.ToFullHumanReadableNameString()>
+                                    @parameter.ParameterType.Name
+                                </span>
+                                <span>
+                                    : @parameter.Name
+                                </span>
+                            </li>
+                        </ol>
+                    }
+                </td>
+                <td>
+                    <span>
+                        @if(method.IsPublic) {
+                            <span>Public</span>
+                        } else if (method.IsFamily || method.IsFamilyOrAssembly) {
+                            <span>Protected</span>
+                        } else {
+                            <span>Private</span>
+                        }
+                        @foreach(var attr in method.GetCustomAttributes(true).Cast<Attribute>()) {
+                            <span title=@_getAttributeTooltipText(attr)>
+                                @attr.GetType().Name
+                            </span>
+                        }
+                    </span>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    internal static readonly JsonSerializerSettings _jsonSettings
+        = Archetypes.DefaultUniverse.ModelSerializer.Options.BuildJsonSerializationSettings(s =>
+            s.Error = (s, e) => e.ErrorContext.Handled = false
+        );
+
+    [Parameter]
+    public IEnumerable<MethodInfo> Methods {
+        get;
+        set;
+    }
+
+    [Parameter]
+    public object DataObject {
+        get;
+        set;
+    }
+
+    string _getAttributeTooltipText(Attribute attribute) {
+        string text = attribute.GetType().ToFullHumanReadableNameString();
+        text += '\n';
+        text += '\n';
+        text += JsonConvert.SerializeObject(attribute, _jsonSettings);
+
+        return text;
+    }
+}

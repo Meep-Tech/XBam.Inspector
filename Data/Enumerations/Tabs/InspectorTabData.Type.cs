@@ -1,11 +1,13 @@
 ﻿using Meep.Tech.Data;
-using Meep.Tech.Data.Reflection;
 using Meep.Tech.Data.Utility;
-using System.Reflection;
 
 namespace Xbam.Inspector.Data {
+
   public partial class InspectorTabData {
     public abstract partial class Type : Enumeration<Type> {
+
+      public virtual bool ShowAsAnOptionInTheAddTabSearch
+        => true;
 
       public virtual string TabHilightColor
           => "black";
@@ -62,25 +64,6 @@ namespace Xbam.Inspector.Data {
 
         return input.OrderBy(t => t.SortKey);
       }
-
-      /*bool _hasNoEnumValue(System.Type type) {
-        if (type.GetCustomAttribute(typeof(Meep.Tech.Data.Configuration.Loader.Settings.DoNotBuildInInitialLoadAttribute)) == null
-          && type.GetCustomAttribute(typeof(Meep.Tech.Data.Configuration.Loader.Settings.DoNotBuildThisOrChildrenInInitialLoadAttribute), true) == null
-        ) {
-          return false;
-        }
-        /*foreach (var splayType in type.GetAllInheritedGenericTypes(typeof(Archetype.IBuildOneForEach<,>))) {
-          if (!typeof(Archetype.ISplayedLazily).IsAssignableFrom(splayType)) {
-            MethodInfo getMethod
-              = splayType.GetMethod("AssociatedEnum", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-
-            if (getMethod() != null) {
-
-            }
-          }
-        }*//*
-        return true;
-      }*/
     }
   }
 }

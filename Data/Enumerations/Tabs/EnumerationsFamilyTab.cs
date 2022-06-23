@@ -3,7 +3,7 @@
 namespace Xbam.Inspector.Data {
     public partial class InspectorTabData {
         public abstract partial class Type {
-            public class EnumerationsFamilyTab : Type {
+            public class EnumerationsFamilyTab : InspectorFamilyTab.Type {
                 public static EnumerationsFamilyTab Id { get; }
                     = new();
                 EnumerationsFamilyTab()

@@ -1,7 +1,7 @@
 ﻿namespace Xbam.Inspector.Data {
     public partial class InspectorTabData {
         public abstract partial class Type {
-            public class ComponentsFamilyTab : Type {
+            public class ComponentsFamilyTab : InspectorFamilyTab.Type {
                 public override string TabHilightColor 
                     => "DarkOrange";
 

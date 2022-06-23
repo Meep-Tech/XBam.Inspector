@@ -49,7 +49,7 @@ namespace Xbam.Inspector.Data {
         /// </summary>
         public string Key 
             => Prefix
-                + "." 
+                + (string.IsNullOrWhiteSpace(Prefix) ? "" : ".")
                 + Name ?? throw new ArgumentNullException(nameof(Name));
 
         /// <summary>

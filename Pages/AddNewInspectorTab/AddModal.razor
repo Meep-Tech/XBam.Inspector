@@ -111,7 +111,9 @@
     public Action Close { get; set; }
 
     protected override void OnInitialized() {
-        _tabTypes = InspectorTabData.Type.All.OrderBy(t => t.ExternalId.ToString());
+        _tabTypes = InspectorTabData.Type.All
+            .Where(t => t.ShowAsAnOptionInTheAddTabSearch)
+            .OrderBy(t => t.ExternalId.ToString());
         _selectedTabType = _tabTypes.First();
         _tabTypeSearchResults = Enumerable.Empty<TabIndexData>();
         base.OnInitialized();

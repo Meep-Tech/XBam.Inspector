@@ -40,8 +40,10 @@
         init;
     }
 
-    public override string HilightColor
-        => Type.TabHilightColor;
+    public override string HilightColor {
+        get => Type.TabHilightColor;
+        set => base.HilightColor = value;
+    }
 
     public string Id 
     => Type.ExternalId.ToString() + Key;

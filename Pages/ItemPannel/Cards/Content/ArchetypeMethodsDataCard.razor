@@ -1,0 +1,160 @@
+﻿@using Meep.Tech.Data;
+@using Meep.Tech.Data.Reflection;
+@using System.Reflection
+@using Meep.Tech.Data.Utility
+@using Newtonsoft.Json
+@using Xbam.Inspector.Data
+@using Xbam.Inspector.Shared.Components.Cards.Content
+@using static Xbam.Inspector.Pages.ItemPannel.Cards.Content.ArchetypePropertiesDataCard
+@inherits DataCardContent;
+
+<div style="display:flex;flex-direction:row;">
+    <input 
+        type="text" 
+        id="search" 
+        class="form-control" 
+        @oninput=@((ChangeEventArgs e) => _onSearchCriteriaChanged(e.Value?.ToString() ?? ""))/>
+    <select 
+        style="width:auto;" 
+        class="form-select"
+        @onchange=@((ChangeEventArgs e) => {
+            (State as ArchetypeMethodsCardData).SearchAccessLevel = Enum.Parse<AccessLevel>(e.Value.ToString());
+            // changes and don't update the text
+            _onSearchCriteriaChanged(null);
+        })>
+        @foreach(AccessLevel level in Enum.GetValues<AccessLevel>()) {
+            <option
+                value=@level
+                selected=@(level == (State as ArchetypeMethodsCardData).SearchAccessLevel)>
+                @level.ToString().ToSentenceCase()
+            </option>
+        }
+    </select>
+    <button
+        class="btn"
+        style="color:white;background-color:@((State as ArchetypeMethodsCardData).SearchOverrideableOnly ? "green" : "grey");"
+        @onclick=@(() => {
+            (State as ArchetypeMethodsCardData).SearchOverrideableOnly =
+                !(State as ArchetypeMethodsCardData).SearchOverrideableOnly;
+            // don't update the text
+            _onSearchCriteriaChanged(null);
+        })
+        title="Overridable Only: Only Show Virtual/Abstract/Overrideable Items in the Search">
+        OO
+    </button>
+    <button
+        class="btn"
+        style="color:white;background-color:@((State as ArchetypeMethodsCardData).SearchDeclaredOnly  ? "green" : "grey");"
+        @onclick=@(() => {
+            (State as ArchetypeMethodsCardData).SearchDeclaredOnly =
+                !(State as ArchetypeMethodsCardData).SearchDeclaredOnly;
+            // don't update the text
+            _onSearchCriteriaChanged(null);
+        })
+        title="Declared Only: Only Show Items Declared or Overriden by This Type">
+        DO
+    </button>
+    <button
+        class="btn"
+        style="color:white;background-color:@((State as ArchetypeMethodsCardData).SearchMakeOnly  ? "green" : "grey");"
+        @onclick=@(() => {
+            (State as ArchetypeMethodsCardData).SearchMakeOnly =
+                !(State as ArchetypeMethodsCardData).SearchMakeOnly;
+            // don't update the text
+            _onSearchCriteriaChanged(null);
+        })
+        title="Make functions Only: Only Show Items that are recognized as Make functions">
+        MO
+    </button>
+</div>
+@if(_methods.Any()) {
+    <MethodsDataCardPart DataObject=@Archetype Methods=@_methods />
+}
+
+@code {
+
+    bool _resultsLoaded, _resultsAreLoading;
+    IEnumerable<MethodInfo> _methods
+        = Enumerable.Empty<MethodInfo>();
+
+    public Archetype Archetype { get; private set; }
+
+    public override CardData State { 
+        get => base.State;
+        set {
+            var state = (ArchetypeMethodsCardData)value;
+            base.State = state;
+            Archetype = state.ForArchetype;
+            StateHasChanged();
+        }
+    }
+
+    protected override void OnInitialized() {
+        _onSearchCriteriaChanged(null);
+    }
+
+    /// <summary>
+    /// Passing in null does not update the search text. passing in empty does
+    /// </summary>
+    void _onSearchCriteriaChanged(string newText) {
+        (State as ArchetypeMethodsCardData).SearchTerm = newText 
+            ?? (State as ArchetypeMethodsCardData).SearchTerm;
+        _resultsLoaded = false;
+        _resultsAreLoading = true;
+        StateHasChanged();
+
+        AccessLevel accessLevel = (State as ArchetypeMethodsCardData).SearchAccessLevel;
+        BindingFlags bindingFlags;
+        if (accessLevel != AccessLevel.All) {
+            bindingFlags = System.Reflection.BindingFlags.Instance;
+            if (accessLevel == AccessLevel.Public || accessLevel == AccessLevel.PublicAndProtected) {
+                bindingFlags |= System.Reflection.BindingFlags.Public;
+            }
+            if (accessLevel == AccessLevel.Private || accessLevel == AccessLevel.Protected || accessLevel == AccessLevel.PublicAndProtected) {
+                bindingFlags |= System.Reflection.BindingFlags.NonPublic;
+            }
+        } else {
+            bindingFlags = System.Reflection.BindingFlags.Instance
+                | System.Reflection.BindingFlags.NonPublic
+                | System.Reflection.BindingFlags.Public;
+        }
+
+        if ((State as ArchetypeMethodsCardData).SearchDeclaredOnly) {
+            bindingFlags |= BindingFlags.DeclaredOnly;
+        }
+        
+        // get most fields
+        _methods = Archetype.Type
+            .GetMethods(bindingFlags)
+                .Where(m => !m.IsSpecialName);
+
+        // check for virtual only
+        if ((State as ArchetypeMethodsCardData).SearchOverrideableOnly) {
+            _methods = _methods.Where(m => m.IsVirtual && !m.IsFinal);
+        }
+
+        // for less accessable searches:
+        if(accessLevel != AccessLevel.All) {
+            if (accessLevel == AccessLevel.PublicAndProtected) {
+                _methods = _methods.Where(m =>m.IsPublic || m.IsFamily || m.IsFamilyOrAssembly);
+            } else if (accessLevel == AccessLevel.Protected) {
+                _methods = _methods.Where(m => m.IsFamily || m.IsFamilyOrAssembly);
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace((State as ArchetypeMethodsCardData).SearchTerm)) {
+            var normalizedSearchTerm = (State as ArchetypeMethodsCardData).SearchTerm.ToLower(); 
+            _methods  = _methods.Where(m => m.Name.ToLower().Contains(normalizedSearchTerm));
+        }
+
+        if ((State as ArchetypeMethodsCardData).SearchMakeOnly) {
+            _methods = _methods.Where(m => m.Name.ToLower().StartsWith("Make") && typeof(IModel).IsAssignableFrom(m.ReturnType));
+        }
+
+        _methods = _methods.OrderBy(m => m.Name);
+
+        _resultsAreLoading = false;
+        _resultsLoaded = true;
+        StateHasChanged();
+    }
+}

@@ -1,7 +1,10 @@
 ﻿using Meep.Tech.Data;
+using Xbam.Inspector.Pages.InitalizationErrorsPannel.Cards.Content;
 using Xbam.Inspector.Pages.ItemPannel.Cards.Content;
+using static Xbam.Inspector.Data.ArchetypeCardData;
 
 namespace Xbam.Inspector.Data {
+
   public partial class ArchetypeCardData {
     [Branch]
     public class TraitsCardData : CardData.Type.XBamMetadata {

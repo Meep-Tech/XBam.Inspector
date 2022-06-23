@@ -5,7 +5,7 @@ using Meep.Tech.Data.Reflection;
 namespace Xbam.Inspector.Data {
   public partial class InspectorTabData {
     public abstract partial class Type {
-      public class ArchetypeFamilyTab : Type {
+      public class ArchetypeFamilyTab : InspectorFamilyTab.Type {
         public static ArchetypeFamilyTab Id { get; }
             = new();
 
@@ -95,7 +95,15 @@ namespace Xbam.Inspector.Data {
 
           cards.Add(propertiesCard, c => c.Key);
 
-          foreach(Archetype.IComponent component in (item.Data as Archetype).Components.Values) {
+          // Make the methods info card
+          CardData methodsCard = CardData.Types.Get<ArchetypeMethodsCardData.Type>().Make(
+            (nameof(CardData.Key), "Methods and Functions"),
+            (nameof(ArchetypeCardData.ForArchetype), item.Data as Archetype)
+          );
+
+          cards.Add(methodsCard, c => c.Key);
+
+          foreach (Archetype.IComponent component in (item.Data as Archetype).Components.Values) {
             // Make the properties info card
             CardData componentCard = CardData.Types.Get<ArchetypeComponentCardData.Type>().Make(
               (nameof(CardData.Key), "Component: " + component.GetType().ToFullHumanReadableNameString(false)),
